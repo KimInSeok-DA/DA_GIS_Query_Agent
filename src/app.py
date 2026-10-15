@@ -3,6 +3,7 @@
 실행: streamlit run src/app.py
 - API 키는 사이드바 입력 또는 .env에서만 받는다. 키는 이 세션의 메모리에만 있고 파일·로그에 남기지 않는다
 - 답마다 에이전트가 한 일(도구 호출·SQL·결과), 근거 없는 수치, 토큰·비용을 보여 준다
+- 자기검증이 첫 답을 고치게 했으면 고치기 전 답과 걸린 수치도 보여 준다
 - 같은 이름의 동처럼 되물은 뒤에는 이어서 답하면 앞 대화를 함께 보낸다
 """
 
@@ -60,6 +61,9 @@ def show_tool_call(i: int, call: dict) -> None:
 
 def show_details(d: dict) -> None:
     """답 아래에 에이전트가 한 일과 비용을 보여 준다."""
+    if d.get("first_ungrounded"):
+        with st.expander(f"자동 검증으로 고친 답 — 첫 답의 수치 {', '.join(d['first_ungrounded'])}이(가) 도구 결과에 없었습니다"):
+            st.markdown(d["first_answer"])
     if d["ungrounded"]:
         st.warning(f"도구 결과에 없는 수치가 답에 있습니다: {', '.join(d['ungrounded'])} — 확인이 필요합니다.")
     with st.expander(f"에이전트가 한 일 (도구 호출 {len(d['tool_calls'])}번)"):
@@ -83,6 +87,8 @@ with st.sidebar:
     api_key = st.text_input(f"API 키 (비우면 .env의 {key_env})", type="password")
     if provider == "gemini":
         st.caption("Gemini 무료 등급은 입력이 제품 개선에 쓰일 수 있습니다. 보내는 내용은 질문과 공개 데이터 조회 결과뿐입니다.")
+    self_check = st.toggle("자기검증", value=True,
+                           help="답의 수치가 도구 결과에 없으면 1번 다시 답하게 합니다(모델 호출 1번 추가).")
     if st.button("대화 지우기"):
         st.session_state.messages = []
     st.divider()
@@ -119,7 +125,7 @@ if question:
         try:
             client = get_client(provider, api_key)
             with st.spinner("도구로 데이터를 조회하는 중…"):
-                r = agent.run(question, client, model, history=history)
+                r = agent.run(question, client, model, history=history, self_check=self_check)
         except agent.DailyQuotaExceeded:
             st.error("API 호출 한도(하루 한도 또는 크레딧)에 걸렸습니다. 나중에 다시 시도하거나 다른 키를 쓰세요.")
             st.stop()
@@ -130,6 +136,7 @@ if question:
         details = {
             "tool_calls": calls,
             "ungrounded": ungrounded_numbers(r.answer, [calls, question, history]),
+            "first_answer": r.first_answer, "first_ungrounded": r.first_ungrounded,
             "input_tokens": r.input_tokens, "output_tokens": r.output_tokens,
             "cost": cost_usd(model, r.input_tokens, r.output_tokens),
             "rounds": r.rounds, "seconds": r.seconds, "stopped": r.stopped,

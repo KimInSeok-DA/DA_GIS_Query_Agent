@@ -114,3 +114,59 @@ def test_eval_pipeline_with_fake_client(tmp_path, monkeypatch):
     (tmp_path / "outputs").mkdir()
     text = ev.write_report(records, "m", "test").read_text(encoding="utf-8")
     assert "2/2 (100%)" in text and "가격 미등록" in text
+    assert "자기검증 켬: 개입 **0회**" in text
+
+
+COUNT_SQL = {"query": "SELECT count(*) AS n FROM emd"}
+
+
+def test_self_check_asks_again_when_number_is_not_in_tool_results():
+    client = FakeClient([
+        resp([fn_call("run_sql", COUNT_SQL)]),
+        resp([], "법정동은 467개이고, 걸어서 약 12분입니다."),
+        resp([], "법정동은 467개입니다. 걷는 시간은 데이터에 없습니다."),
+    ])
+    r = agent.run("법정동 몇 개?", client, model="m")
+    assert r.answer == "법정동은 467개입니다. 걷는 시간은 데이터에 없습니다."
+    assert r.first_ungrounded == ["12"] and "12분" in r.first_answer
+    assert r.rounds == 3
+    sent = client.requests[-1]["messages"]
+    assert sent[-2] == {"role": "assistant", "content": "법정동은 467개이고, 걸어서 약 12분입니다."}
+    assert sent[-1]["role"] == "user" and "12" in sent[-1]["content"] and "[자동 검증]" in sent[-1]["content"]
+
+
+def test_self_check_retries_only_once():
+    client = FakeClient([resp([], "고속터미널역 669m입니다."), resp([], "고속터미널역 670m입니다.")])
+    r = agent.run("반포동 가까운 역?", client, model="m")
+    assert r.answer == "고속터미널역 670m입니다."  # 다시 답해도 근거가 없으면 그대로 내보내고, 평가가 잡는다
+    assert r.first_ungrounded == ["669"] and len(client.requests) == 2
+
+
+def test_self_check_lets_model_call_tools_again():
+    client = FakeClient([
+        resp([], "고속터미널역 669m입니다."),
+        resp([fn_call("run_sql", {"query": "SELECT near_station, near_dist_m FROM emd WHERE emd_nm = '반포동'"})]),
+        resp([], "고속터미널역입니다."),
+    ])
+    r = agent.run("반포동 가까운 역?", client, model="m")
+    assert [c.name for c in r.tool_calls] == ["run_sql"] and r.answer == "고속터미널역입니다."
+
+
+def test_self_check_off_and_grounded_answers_cost_nothing_extra():
+    client = FakeClient([resp([], "고속터미널역 669m입니다.")])
+    r = agent.run("반포동 가까운 역?", client, model="m", self_check=False)
+    assert r.first_ungrounded == [] and len(client.requests) == 1
+    # 숫자가 질문·앞 대화에 있으면 근거로 본다
+    client = FakeClient([resp([], "앞에서 말한 290m가 맞습니다.")])
+    history = [{"role": "user", "content": "역삼동?"}, {"role": "assistant", "content": "역삼역 290m입니다."}]
+    r = agent.run("그게 맞아?", client, model="m", history=history)
+    assert r.first_ungrounded == [] and len(client.requests) == 1
+
+
+def test_eval_records_first_answer_when_self_check_steps_in():
+    import eval as ev
+
+    client = FakeClient([resp([], "버스 정류장은 12개입니다."), resp([], "버스 정류장 수는 데이터에 없습니다.")])
+    rec = ev.run_eval(client, "m", ev.load_set(["Q25"]))[0]
+    assert rec["intervened"] and rec["first_ungrounded"] == ["12"] and rec["ungrounded"] == []
+    assert rec["correct"] and not rec["first_correct"]

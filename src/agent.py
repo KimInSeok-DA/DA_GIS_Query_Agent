@@ -2,6 +2,7 @@
 
 질문 → 모델이 도구 호출 요청 → 우리 코드가 실행 → 결과를 모델에 돌려줌 → ... → 최종 답.
 도구 호출은 MAX_TOOL_ROUNDS번까지만 허용한다.
+자기검증(1015_12): 최종 답의 숫자가 도구 결과·질문에 없으면 그 숫자를 알려 주고 1번만 다시 답하게 한다.
 
 제공사는 OpenAI 라이브러리로 부른다. Gemini는 OpenAI 호환 주소(base_url)로 같은 코드를 쓴다.
 Responses API 대신 Chat Completions를 쓰는 이유: Gemini 호환 계층이 공식 문서에서 지원하는 것이 이쪽이다(1015_07).
@@ -13,6 +14,7 @@ import re
 import time
 from dataclasses import dataclass, field
 
+from grade import ungrounded_numbers
 from tools import TOOL_SPECS, TOOLS
 
 MAX_TOOL_ROUNDS = 6
@@ -74,6 +76,10 @@ SYSTEM_PROMPT = """너는 서울 법정동별 지하철 접근성 데이터에 �
 7. 한국어로 짧게 답한다."""
 
 
+CHECK_FEEDBACK = ("[자동 검증] 답의 수치 {nums}은(는) 도구 결과에 없습니다. "
+                  "도구로 확인해서 고치거나, 확인할 수 없으면 그 수치를 빼고 다시 답하세요.")
+
+
 @dataclass
 class ToolCall:
     name: str
@@ -91,6 +97,8 @@ class AgentResult:
     rounds: int = 0
     seconds: float = 0.0
     stopped: str = ""  # 정상 종료면 빈 문자열, 상한 도달 등이면 이유
+    first_answer: str = ""  # 자기검증이 끼어들었을 때만: 검증 전 첫 답
+    first_ungrounded: list[str] = field(default_factory=list)  # 첫 답의 근거 없는 수치(비어 있으면 개입 없음)
 
 
 def make_client(provider: str, api_key: str | None = None):
@@ -125,24 +133,28 @@ def call_tool(name: str, arguments: str) -> tuple[dict, dict]:
         return args, {"error": f"인자 오류: {e}"}
 
 
-def run(question: str, client, model: str, history: list[dict] | None = None) -> AgentResult:
-    """질문 하나에 답한다. history는 이전 대화(되묻기 후 이어지는 질문용), [{"role", "content"}, ...]."""
+def run(question: str, client, model: str, history: list[dict] | None = None,
+        self_check: bool = True) -> AgentResult:
+    """질문 하나에 답한다. history는 이전 대화(되묻기 후 이어지는 질문용), [{"role", "content"}, ...].
+    self_check가 켜져 있으면 답의 근거 없는 수치를 코드로 검사해, 있으면 1번만 다시 답하게 한다."""
     start = time.perf_counter()
     result = AgentResult(answer="")
     messages: list = [{"role": "system", "content": SYSTEM_PROMPT}, *(history or []),
                       {"role": "user", "content": question}]
     tools = api_tools()
+    tool_rounds = 0
+    checked = not self_check
 
-    for round_no in range(MAX_TOOL_ROUNDS + 1):
+    while True:
         # 상한에 닿으면 도구 없이 지금까지의 결과로 답하게 한다
-        last = round_no == MAX_TOOL_ROUNDS
+        last = tool_rounds >= MAX_TOOL_ROUNDS
         resp = client.chat.completions.create(
             model=model,
             messages=messages,
             tools=tools,
             tool_choice="none" if last else "auto",
         )
-        result.rounds = round_no + 1
+        result.rounds += 1
         if resp.usage is not None:
             # Gemini 호환 응답은 completion_tokens에 생각 토큰을 넣지 않고 total_tokens에만 넣는다
             u = resp.usage
@@ -153,18 +165,32 @@ def run(question: str, client, model: str, history: list[dict] | None = None) ->
 
         msg = resp.choices[0].message
         calls = msg.tool_calls or []
-        if not calls or last:
-            result.answer = msg.content or ""
-            if last:
-                result.stopped = f"도구 호출 상한({MAX_TOOL_ROUNDS}회)"
-            break
+        if calls and not last:
+            tool_rounds += 1
+            # 모델의 도구 호출 메시지를 그대로 돌려준다(Gemini의 thought signature 같은 추가 필드 포함)
+            messages.append(msg.model_dump(exclude_none=True))
+            for c in calls:
+                args, out = call_tool(c.function.name, c.function.arguments)
+                result.tool_calls.append(ToolCall(c.function.name, args, out))
+                messages.append({"role": "tool", "tool_call_id": c.id,
+                                 "content": json.dumps(out, ensure_ascii=False)})
+            continue
 
-        # 모델의 도구 호출 메시지를 그대로 돌려준다(Gemini의 thought signature 같은 추가 필드 포함)
-        messages.append(msg.model_dump(exclude_none=True))
-        for c in calls:
-            args, out = call_tool(c.function.name, c.function.arguments)
-            result.tool_calls.append(ToolCall(c.function.name, args, out))
-            messages.append({"role": "tool", "tool_call_id": c.id, "content": json.dumps(out, ensure_ascii=False)})
+        answer = msg.content or ""
+        if last:
+            result.stopped = f"도구 호출 상한({MAX_TOOL_ROUNDS}회)"
+        if not checked:
+            checked = True
+            sources = [[{"arguments": c.arguments, "result": c.result} for c in result.tool_calls],
+                       question, [m["content"] for m in history or []]]
+            nums = ungrounded_numbers(answer, sources)
+            if nums:
+                result.first_answer, result.first_ungrounded = answer, nums
+                messages.append({"role": "assistant", "content": answer})
+                messages.append({"role": "user", "content": CHECK_FEEDBACK.format(nums=", ".join(nums))})
+                continue
+        result.answer = answer
+        break
 
     result.seconds = round(time.perf_counter() - start, 2)
     return result
