@@ -1,0 +1,6 @@
+#!/bin/sh
+# AI 공동 작성자·세션 trailer를 커밋 메시지에서 지운다. 사람 공동 작성자는 남긴다.
+pattern='^(co-authored-by:.*(claude|anthropic|codex|openai|chatgpt|gemini|agy)|claude-session:|ai-generated-by:)'
+tmp="$1.tmp"
+grep -viE "$pattern" "$1" > "$tmp"
+mv "$tmp" "$1"
