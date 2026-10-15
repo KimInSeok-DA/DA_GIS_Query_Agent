@@ -21,7 +21,9 @@
 uv venv -p 3.14 .venv
 uv pip install -r requirements.txt
 cp .env.example .env   # GEMINI_API_KEY 입력(무료 등급 가능)
+source .venv/bin/activate   # Windows cmd: .venv\Scripts\activate, PowerShell: .venv\Scripts\Activate.ps1
 
+streamlit run src/app.py                          # 질문 화면(API 키는 .env 또는 사이드바 입력)
 python -m pytest                                  # 테스트(API 호출 없음)
 python src/answers.py                             # 정답 다시 계산
 python src/eval.py --model gemini-3.5-flash-lite --label run1   # 개선용 48문항 평가
@@ -38,8 +40,9 @@ src/
   answers.py  평가 정답 계산(pandas, 에이전트와 다른 경로) → eval/answers.json
   grade.py    규칙 기반 채점(LLM 없음), 근거 없는 수치 검사
   eval.py     질문 세트 전체 실행·채점 → outputs/eval_report_<이름>.md
+  app.py      Streamlit 화면: 질문·답·에이전트가 한 일(SQL·결과)·근거 없는 수치·토큰
 eval/       평가 질문 120개(개선용 48 + 홀드아웃 72, questions.csv)와 정답 규칙(answers.json)
-tests/      도구·정답·채점기·에이전트 루프 테스트(API 호출 없음)
+tests/      도구·정답·채점기·에이전트 루프·화면 테스트(API 호출 없음)
 outputs/    평가 보고서(원본 실행 기록 outputs/raw/는 비공개)
 docs/       진행 과정·의사결정·작업일지·AI 활용 기록
 ```
