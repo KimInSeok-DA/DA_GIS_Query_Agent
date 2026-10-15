@@ -5,3 +5,4 @@ outputs/*.md text eol=lf
 outputs/*.json text eol=lf
 eval/*.csv text eol=lf
 *.png binary
+eval/*.json text eol=lf

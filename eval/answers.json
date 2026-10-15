@@ -1,0 +1,968 @@
+{
+ "Q01": [
+  {
+   "kind": "text",
+   "value": "학동"
+  },
+  {
+   "kind": "number",
+   "value": 44.0,
+   "tol": 1,
+   "unit": "m"
+  }
+ ],
+ "Q02": [
+  {
+   "kind": "number",
+   "value": 96.0,
+   "tol": 0.1,
+   "unit": "%"
+  }
+ ],
+ "Q03": [
+  {
+   "kind": "number",
+   "value": 5.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q04": [
+  {
+   "kind": "number",
+   "value": 4.797,
+   "tol": 0.01,
+   "unit": "km2"
+  }
+ ],
+ "Q05": [
+  {
+   "kind": "number",
+   "value": 630.3571,
+   "tol": 1,
+   "unit": "m"
+  }
+ ],
+ "Q06": [
+  {
+   "kind": "text",
+   "value": "중구"
+  }
+ ],
+ "Q07": [
+  {
+   "kind": "text",
+   "value": "금천구"
+  }
+ ],
+ "Q08": [
+  {
+   "kind": "number",
+   "value": 87.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q09": [
+  {
+   "kind": "number",
+   "value": 412.0,
+   "tol": 1,
+   "unit": "m"
+  }
+ ],
+ "Q10": [
+  {
+   "kind": "text",
+   "value": "평창동"
+  },
+  {
+   "kind": "text",
+   "value": "내곡동"
+  },
+  {
+   "kind": "text",
+   "value": "신영동"
+  }
+ ],
+ "Q11": [
+  {
+   "kind": "text",
+   "value": "반포동"
+  }
+ ],
+ "Q12": [
+  {
+   "kind": "text",
+   "value": "신림동"
+  },
+  {
+   "kind": "text",
+   "value": "상계동"
+  }
+ ],
+ "Q13": [
+  {
+   "kind": "text",
+   "value": "김포공항"
+  }
+ ],
+ "Q14": [
+  {
+   "kind": "number",
+   "value": 26.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q15": [
+  {
+   "kind": "number",
+   "value": 43.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q16": [
+  {
+   "kind": "number",
+   "value": 186.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q17": [
+  {
+   "kind": "text",
+   "value": "우면동"
+  },
+  {
+   "kind": "text",
+   "value": "내곡동"
+  },
+  {
+   "kind": "text",
+   "value": "염곡동"
+  }
+ ],
+ "Q18": [
+  {
+   "kind": "number",
+   "value": 50.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q19": [
+  {
+   "kind": "number",
+   "value": 13.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q20": [
+  {
+   "kind": "number",
+   "value": 38.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q21": [
+  {
+   "kind": "number",
+   "value": 82.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q22": [
+  {
+   "kind": "text",
+   "value": "은평구"
+  },
+  {
+   "kind": "text",
+   "value": "강남구"
+  },
+  {
+   "kind": "clarify"
+  }
+ ],
+ "Q23": [
+  {
+   "kind": "text",
+   "value": "마포구"
+  },
+  {
+   "kind": "text",
+   "value": "양천구"
+  },
+  {
+   "kind": "clarify"
+  }
+ ],
+ "Q24": [
+  {
+   "kind": "text",
+   "value": "약수"
+  }
+ ],
+ "Q25": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "Q26": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "Q27": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "Q28": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "Q29": [
+  {
+   "kind": "number",
+   "value": 34.0,
+   "tol": 0,
+   "unit": "m"
+  }
+ ],
+ "Q30": [
+  {
+   "kind": "text",
+   "value": "시흥동"
+  }
+ ],
+ "Q31": [
+  {
+   "kind": "number",
+   "value": 177.7418,
+   "tol": 1,
+   "unit": "m"
+  }
+ ],
+ "Q32": [
+  {
+   "kind": "number",
+   "value": 17.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q33": [
+  {
+   "kind": "text",
+   "value": "7호선"
+  }
+ ],
+ "Q34": [
+  {
+   "kind": "number",
+   "value": 29.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q35": [
+  {
+   "kind": "number",
+   "value": 39.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q36": [
+  {
+   "kind": "number",
+   "value": 28.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q37": [
+  {
+   "kind": "text",
+   "value": "압구정"
+  }
+ ],
+ "Q38": [
+  {
+   "kind": "number",
+   "value": 0.115,
+   "tol": 0.01,
+   "unit": "km2"
+  }
+ ],
+ "Q39": [
+  {
+   "kind": "number",
+   "value": 4.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q40": [
+  {
+   "kind": "number",
+   "value": 22.9,
+   "tol": 0.1,
+   "unit": "%"
+  }
+ ],
+ "Q41": [
+  {
+   "kind": "number",
+   "value": 819.3108,
+   "tol": 10,
+   "unit": "m"
+  }
+ ],
+ "Q42": [
+  {
+   "kind": "text",
+   "value": "창천동"
+  },
+  {
+   "kind": "text",
+   "value": "창전동"
+  },
+  {
+   "kind": "text",
+   "value": "서교동"
+  },
+  {
+   "kind": "text",
+   "value": "동교동"
+  },
+  {
+   "kind": "text",
+   "value": "연남동"
+  }
+ ],
+ "Q43": [
+  {
+   "kind": "text",
+   "value": "언주"
+  }
+ ],
+ "Q44": [
+  {
+   "kind": "text",
+   "value": "신용산"
+  },
+  {
+   "kind": "number",
+   "value": 287.8935,
+   "tol": 10,
+   "unit": "m"
+  }
+ ],
+ "Q45": [
+  {
+   "kind": "refuse"
+  },
+  {
+   "kind": "absent",
+   "pattern": "\\d+\\s*분"
+  }
+ ],
+ "Q46": [
+  {
+   "kind": "number",
+   "value": 6.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "Q47": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "Q48": [
+  {
+   "kind": "refuse"
+  },
+  {
+   "kind": "absent",
+   "pattern": "\\d+\\s*번\\s*출구"
+  }
+ ],
+ "H01": [
+  {
+   "kind": "text",
+   "value": "서울숲"
+  },
+  {
+   "kind": "number",
+   "value": 285.0,
+   "tol": 1,
+   "unit": "m"
+  }
+ ],
+ "H02": [
+  {
+   "kind": "number",
+   "value": 0.116,
+   "tol": 0.01,
+   "unit": "km2"
+  }
+ ],
+ "H03": [
+  {
+   "kind": "number",
+   "value": 5.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H04": [
+  {
+   "kind": "number",
+   "value": 7.7,
+   "tol": 0.1,
+   "unit": "%"
+  }
+ ],
+ "H05": [
+  {
+   "kind": "number",
+   "value": 2075.0,
+   "tol": 1,
+   "unit": "m"
+  }
+ ],
+ "H06": [
+  {
+   "kind": "text",
+   "value": "잠실새내"
+  }
+ ],
+ "H07": [
+  {
+   "kind": "number",
+   "value": 93.2892,
+   "tol": 0.1,
+   "unit": "%"
+  }
+ ],
+ "H08": [
+  {
+   "kind": "text",
+   "value": "종로구"
+  }
+ ],
+ "H09": [
+  {
+   "kind": "text",
+   "value": "강남구"
+  }
+ ],
+ "H10": [
+  {
+   "kind": "number",
+   "value": 452.6154,
+   "tol": 1,
+   "unit": "m"
+  }
+ ],
+ "H11": [
+  {
+   "kind": "number",
+   "value": 60.4032,
+   "tol": 0.1,
+   "unit": "%"
+  }
+ ],
+ "H12": [
+  {
+   "kind": "text",
+   "value": "금천구"
+  },
+  {
+   "kind": "text",
+   "value": "도봉구"
+  }
+ ],
+ "H13": [
+  {
+   "kind": "text",
+   "value": "논현동"
+  }
+ ],
+ "H14": [
+  {
+   "kind": "text",
+   "value": "남학동"
+  }
+ ],
+ "H15": [
+  {
+   "kind": "text",
+   "value": "안국"
+  }
+ ],
+ "H16": [
+  {
+   "kind": "text",
+   "value": "세곡동"
+  }
+ ],
+ "H17": [
+  {
+   "kind": "text",
+   "value": "숭인동"
+  }
+ ],
+ "H18": [
+  {
+   "kind": "text",
+   "value": "대곡"
+  }
+ ],
+ "H19": [
+  {
+   "kind": "number",
+   "value": 113.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H20": [
+  {
+   "kind": "number",
+   "value": 150.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H21": [
+  {
+   "kind": "number",
+   "value": 34.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H22": [
+  {
+   "kind": "number",
+   "value": 14.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H23": [
+  {
+   "kind": "text",
+   "value": "외발산동"
+  },
+  {
+   "kind": "text",
+   "value": "개화동"
+  },
+  {
+   "kind": "text",
+   "value": "과해동"
+  },
+  {
+   "kind": "text",
+   "value": "오곡동"
+  },
+  {
+   "kind": "text",
+   "value": "오쇠동"
+  }
+ ],
+ "H24": [
+  {
+   "kind": "number",
+   "value": 9.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H25": [
+  {
+   "kind": "number",
+   "value": 7.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H26": [
+  {
+   "kind": "number",
+   "value": 15.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H27": [
+  {
+   "kind": "number",
+   "value": 24.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H28": [
+  {
+   "kind": "text",
+   "value": "5호선"
+  },
+  {
+   "kind": "text",
+   "value": "6호선"
+  },
+  {
+   "kind": "text",
+   "value": "경의중앙선"
+  },
+  {
+   "kind": "text",
+   "value": "인천국제공항선"
+  }
+ ],
+ "H29": [
+  {
+   "kind": "number",
+   "value": 240.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H30": [
+  {
+   "kind": "number",
+   "value": 2.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H31": [
+  {
+   "kind": "text",
+   "value": "은평구"
+  },
+  {
+   "kind": "text",
+   "value": "강남구"
+  },
+  {
+   "kind": "clarify"
+  }
+ ],
+ "H32": [
+  {
+   "kind": "text",
+   "value": "마포구"
+  },
+  {
+   "kind": "text",
+   "value": "양천구"
+  },
+  {
+   "kind": "clarify"
+  }
+ ],
+ "H33": [
+  {
+   "kind": "text",
+   "value": "상계"
+  }
+ ],
+ "H34": [
+  {
+   "kind": "text",
+   "value": "신목동"
+  }
+ ],
+ "H35": [
+  {
+   "kind": "text",
+   "value": "은평구"
+  },
+  {
+   "kind": "text",
+   "value": "강남구"
+  },
+  {
+   "kind": "clarify"
+  }
+ ],
+ "H36": [
+  {
+   "kind": "text",
+   "value": "낙성대"
+  }
+ ],
+ "H37": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "H38": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "H39": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "H40": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "H41": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "H42": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "H43": [
+  {
+   "kind": "number",
+   "value": 337.0,
+   "tol": 0,
+   "unit": "m"
+  }
+ ],
+ "H44": [
+  {
+   "kind": "text",
+   "value": "평창동"
+  }
+ ],
+ "H45": [
+  {
+   "kind": "number",
+   "value": 29.7731,
+   "tol": 0.2,
+   "unit": "%"
+  }
+ ],
+ "H46": [
+  {
+   "kind": "number",
+   "value": 8.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H47": [
+  {
+   "kind": "number",
+   "value": 208.0,
+   "tol": 1,
+   "unit": "m"
+  }
+ ],
+ "H48": [
+  {
+   "kind": "text",
+   "value": "의주로2가"
+  }
+ ],
+ "H49": [
+  {
+   "kind": "text",
+   "value": "2호선"
+  }
+ ],
+ "H50": [
+  {
+   "kind": "number",
+   "value": 6.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H51": [
+  {
+   "kind": "number",
+   "value": 150.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H52": [
+  {
+   "kind": "text",
+   "value": "남서울경전철"
+  }
+ ],
+ "H53": [
+  {
+   "kind": "number",
+   "value": 24.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H54": [
+  {
+   "kind": "text",
+   "value": "5호선"
+  },
+  {
+   "kind": "text",
+   "value": "9호선"
+  }
+ ],
+ "H55": [
+  {
+   "kind": "number",
+   "value": 1.852,
+   "tol": 0.01,
+   "unit": "km2"
+  }
+ ],
+ "H56": [
+  {
+   "kind": "text",
+   "value": "양천구청"
+  }
+ ],
+ "H57": [
+  {
+   "kind": "number",
+   "value": 4.461,
+   "tol": 0.01,
+   "unit": "km2"
+  }
+ ],
+ "H58": [
+  {
+   "kind": "number",
+   "value": 544.8276,
+   "tol": 1,
+   "unit": "m"
+  }
+ ],
+ "H59": [
+  {
+   "kind": "text",
+   "value": "공항철도"
+  },
+  {
+   "kind": "text",
+   "value": "서울교통공사"
+  },
+  {
+   "kind": "text",
+   "value": "한국철도공사"
+  }
+ ],
+ "H60": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "H61": [
+  {
+   "kind": "number",
+   "value": 3486.8419,
+   "tol": 10,
+   "unit": "m"
+  }
+ ],
+ "H62": [
+  {
+   "kind": "number",
+   "value": 9.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H63": [
+  {
+   "kind": "text",
+   "value": "녹번"
+  }
+ ],
+ "H64": [
+  {
+   "kind": "text",
+   "value": "회현"
+  }
+ ],
+ "H65": [
+  {
+   "kind": "text",
+   "value": "율현동"
+  }
+ ],
+ "H66": [
+  {
+   "kind": "text",
+   "value": "봉래동2가"
+  }
+ ],
+ "H67": [
+  {
+   "kind": "refuse"
+  },
+  {
+   "kind": "absent",
+   "pattern": "\\d+\\s*분"
+  }
+ ],
+ "H68": [
+  {
+   "kind": "number",
+   "value": 5.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "H69": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "H70": [
+  {
+   "kind": "refuse"
+  },
+  {
+   "kind": "absent",
+   "pattern": "\\d+\\s*(원|만|억)"
+  }
+ ],
+ "H71": [
+  {
+   "kind": "text",
+   "value": "2호선"
+  },
+  {
+   "kind": "text",
+   "value": "신분당선"
+  }
+ ],
+ "H72": [
+  {
+   "kind": "number",
+   "value": 2928.0,
+   "tol": 1,
+   "unit": "m"
+  }
+ ]
+}
