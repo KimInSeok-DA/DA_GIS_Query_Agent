@@ -97,3 +97,12 @@ def test_dist_m_macro():
     lon1, lat1, lon2, lat2, d = r["rows"][0]
     assert abs(d - answers.haversine_m(lon1, lat1, lon2, lat2)) < 0.01
     assert 800 < d < 840
+
+
+def test_find_dong_similar_is_marked_different():
+    """없는 동(청담1가)은 후보로 주지 않고, 비슷한 동은 similar로 따로 '같은 동이 아님'을 붙인다."""
+    r = find_dong("강남구 청담1가")
+    assert r["count"] == 0 and r["candidates"] == []
+    assert [c["emd_nm"] for c in r["similar"]] == ["청담동"]
+    assert "같은 동이 아니다" in r["note"]
+    assert "similar" not in find_dong("없는동")

@@ -133,6 +133,14 @@ def find_dong(name: str) -> dict:
         result["note"] = note
     if hit.empty:
         result["note"] = "데이터에 해당 동이 없습니다(서울 법정동 467개 기준)."
+        # 없는 동을 비슷한 동으로 말없이 바꿔 답하지 않도록, 비슷한 동은 따로 '같은 동이 아님'을 붙여 준다(1015_11)
+        base = re.sub(r"\d*(가|동)$", "", text)
+        if len(base) >= 2:
+            similar = pool[pool["emd_nm"].str.startswith(base)]
+            if not similar.empty:
+                result["similar"] = similar[cols].head(5).to_dict(orient="records")
+                result["note"] += (" similar는 이름이 비슷한 다른 동이며 같은 동이 아니다. "
+                                   "그 동으로 바꿔 답하지 말고, 없다고 말한 뒤 그 동을 찾는지 사용자에게 물어라.")
     return result
 
 
