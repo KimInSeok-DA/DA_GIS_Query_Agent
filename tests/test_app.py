@@ -22,6 +22,7 @@ def test_app_answers_with_tool_details(monkeypatch):
     client = FakeClient([
         resp([fn_call("run_sql", {"query": "SELECT count(*) AS n FROM emd"})]),
         resp([], "법정동은 467개입니다. 약 12분 걸립니다."),
+        resp([], "법정동은 467개입니다. 약 15분 걸립니다."),  # 자기검증 뒤에도 근거 없는 수치가 남은 경우
     ])
     monkeypatch.setattr(agent, "make_client", lambda provider, api_key=None: client)
 
@@ -30,8 +31,9 @@ def test_app_answers_with_tool_details(monkeypatch):
     at.chat_input[0].set_value("법정동은 몇 개야?").run()
     assert not at.exception
     assert any("467개" in m.value for m in at.markdown)
-    # 도구 결과에 없는 12가 근거 없는 수치로 표시된다
-    assert any("12" in w.value for w in at.warning)
+    # 첫 답의 12는 자기검증이 걸렀고, 다시 답한 15는 근거 없는 수치로 표시된다
+    assert any("12" in e.label for e in at.expander)
+    assert any("15" in w.value for w in at.warning)
     assert any(c.value == "SELECT count(*) AS n FROM emd" for c in at.code)
 
 
