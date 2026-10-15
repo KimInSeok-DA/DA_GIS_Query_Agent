@@ -1,0 +1,17 @@
+#!/bin/sh
+# 푸시할 커밋에 AI trailer가 있으면 막는다.
+pattern='co-authored-by:.*(claude|anthropic|codex|openai|chatgpt|gemini|agy)|claude-session:|ai-generated-by:'
+zero=0000000000000000000000000000000000000000
+while read local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue
+  if [ "$remote_sha" = "$zero" ]; then
+    range="$local_sha"
+  else
+    range="$remote_sha..$local_sha"
+  fi
+  if git log --format=%B "$range" | grep -qiE "$pattern"; then
+    echo "pre-push: AI trailer가 들어간 커밋이 있어 푸시를 막았습니다 ($local_ref)." >&2
+    exit 1
+  fi
+done
+exit 0

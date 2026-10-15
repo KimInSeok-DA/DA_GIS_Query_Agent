@@ -1,0 +1,28 @@
+# 비공개 자료(지원 맥락)
+_private/
+
+# 비밀 키
+.env
+
+# 원본 데이터(다시 받을 수 있음)
+data/raw/
+
+# LLM 호출 원본 응답·실행 로그(키·비용 정보가 섞일 수 있음, 요약만 outputs/에 공개)
+outputs/raw/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# 임시
+*.log
+.DS_Store
+Thumbs.db
+~$*
+
+# 개인 Claude Code 설정(공유 설정 .claude/settings.json은 올린다)
+.claude/settings.local.json

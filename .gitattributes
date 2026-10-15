@@ -1,0 +1,7 @@
+# 데이터·결과 파일은 LF 그대로 둔다(Windows 자동 CRLF 변환 때문에 내용이 같아도 변경으로 잡히는 것 방지)
+data/*.csv text eol=lf
+outputs/*.csv text eol=lf
+outputs/*.md text eol=lf
+outputs/*.json text eol=lf
+eval/*.csv text eol=lf
+*.png binary
