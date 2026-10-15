@@ -20,7 +20,28 @@
 ```bash
 uv venv -p 3.14 .venv
 uv pip install -r requirements.txt
-cp .env.example .env   # OPENAI_API_KEY 입력
+cp .env.example .env   # GEMINI_API_KEY 입력(무료 등급 가능)
+
+python -m pytest                                  # 테스트(API 호출 없음)
+python src/answers.py                             # 정답 다시 계산
+python src/eval.py --model gemini-3.5-flash-lite --label run1   # 개선용 48문항 평가
+python src/eval.py --model gemini-3.5-flash-lite --label run1_regrade --regrade run1   # 저장된 답 다시 채점(API 호출 없음)
+```
+
+## 폴더 구조
+
+```text
+data/       에이전트가 조회하는 데이터(공개 CSV 사본)
+src/
+  tools.py    읽기 전용 도구: run_sql(SELECT만, 거리 함수 dist_m), find_dong(동 이름 → 법정동)
+  agent.py    function calling 루프(OpenAI 호환 Chat Completions, 기본 Gemini, 프레임워크 없음)
+  answers.py  평가 정답 계산(pandas, 에이전트와 다른 경로) → eval/answers.json
+  grade.py    규칙 기반 채점(LLM 없음), 근거 없는 수치 검사
+  eval.py     질문 세트 전체 실행·채점 → outputs/eval_report_<이름>.md
+eval/       평가 질문 120개(개선용 48 + 홀드아웃 72, questions.csv)와 정답 규칙(answers.json)
+tests/      도구·정답·채점기·에이전트 루프 테스트(API 호출 없음)
+outputs/    평가 보고서(원본 실행 기록 outputs/raw/는 비공개)
+docs/       진행 과정·의사결정·작업일지·AI 활용 기록
 ```
 
 ## 진행 과정
