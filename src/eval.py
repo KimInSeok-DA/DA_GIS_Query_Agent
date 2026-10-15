@@ -162,17 +162,50 @@ def write_report(records: list[dict], model: str, label: str, provider: str = ""
     return out
 
 
+def write_repeat_report(labels: list[str], label: str) -> Path:
+    """같은 세트를 여러 번 돌린 실행 기록을 비교한다: 실행별 정답률, 매번 맞지는 않은 문항(답의 흔들림)."""
+    runs = {lb: {r["id"]: r for r in map(json.loads, open(ROOT / "outputs" / "raw" / f"{lb}_runs.jsonl",
+                                                       encoding="utf-8"))} for lb in labels}
+    ids = list(runs[labels[0]])
+    assert all(list(rs) == ids for rs in runs.values()), "실행마다 문항이 다르다"
+    k = len(labels)
+    lines = [f"# 반복 실행 비교: {label}", "", f"- 실행 {k}번: {', '.join(labels)} (문항 {len(ids)}개씩)", "",
+             "| 실행 | 정답 | 근거 없는 수치가 나온 답 | 모델 호출 |", "|---|---|---|---|"]
+    for lb, rs in runs.items():
+        rows = rs.values()
+        lines.append(f"| {lb} | {sum(r['correct'] for r in rows)}/{len(ids)} | "
+                     f"{sum(bool(r.get('ungrounded')) for r in rows)} | {sum(r['rounds'] for r in rows)} |")
+    always = sum(all(runs[lb][i]["correct"] for lb in labels) for i in ids)
+    lines += ["", f"- **{k}번 모두 정답: {always}/{len(ids)}**", "", "## 매번 맞지는 않은 문항", "",
+              "| ID | 유형 | 맞은 횟수 | 근거 없는 수치 | 질문 |", "|---|---|---|---|---|"]
+    for i in ids:
+        rs = [runs[lb][i] for lb in labels]
+        n_ok = sum(r["correct"] for r in rs)
+        ung = sorted({x for r in rs for x in r.get("ungrounded", [])})
+        if n_ok < k or ung:
+            lines.append(f"| {i} | {rs[0]['type']} | {n_ok}/{k} | {', '.join(ung) or '-'} | {rs[0]['question']} |")
+    out = ROOT / "outputs" / f"eval_report_{label}.md"
+    out.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--provider", choices=list(agent.PROVIDERS), default="gemini")
-    ap.add_argument("--model", required=True)
+    ap.add_argument("--model", default="gemini-3.5-flash-lite")
     ap.add_argument("--label", required=True, help="결과 파일 이름에 붙일 이름, 예: run1")
     ap.add_argument("--ids", nargs="*", help="일부 문항만, 예: Q01 Q22")
     ap.add_argument("--splits", nargs="*", default=["dev"],
                     help="dev(개선용) / holdout / holdout_extra. 홀드아웃은 개선이 끝난 뒤에만 돌린다")
     ap.add_argument("--regrade", metavar="LABEL",
                     help="API를 부르지 않고 저장된 실행 기록을 다시 채점해 --label 이름으로 보고서를 쓴다")
+    ap.add_argument("--compare", nargs="+", metavar="LABEL",
+                    help="API를 부르지 않고 여러 실행 기록을 비교해 --label 이름으로 보고서를 쓴다")
     args = ap.parse_args()
+
+    if args.compare:
+        print(f"보고서: {write_repeat_report(args.compare, args.label).relative_to(ROOT)}")
+        return
 
     if args.regrade:
         records = regrade(args.regrade)

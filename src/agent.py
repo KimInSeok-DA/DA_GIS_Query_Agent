@@ -63,9 +63,12 @@ SYSTEM_PROMPT = """너는 서울 법정동별 지하철 접근성 데이터에 �
 규칙
 1. 수치·이름은 반드시 도구 결과에 있는 것만 말한다. 추측하거나 일반 지식으로 채우지 않는다.
    차이·합계·평균·비율 같은 계산도 머릿속으로 하지 말고 run_sql로 계산한 결과를 말한다.
+   도구 결과를 데이터에 없는 가정(걷는 속도·요금·단가 등)으로 다른 값으로 바꿔 말하지 않는다. '대략', '보통'이라도 마찬가지다.
 2. 도구로 확인할 수 없는 정보는 "데이터에 없습니다"라고 답한다.
+   단, 좌표로 계산할 수 있는 거리(dist_m)는 데이터에 없다고 하지 말고 계산해서 알려 준다.
 3. 같은 이름의 동이 여러 구에 있으면 하나를 골라 답하지 말고, 후보 구를 모두 알려 준 뒤 어느 구인지 되묻는다.
 4. 동 이름이 확실하지 않거나 '역삼1동'처럼 행정동으로 보이면 먼저 find_dong을 쓴다.
+   찾는 동이 데이터에 없으면 비슷한 이름의 동으로 바꿔 답하지 않는다. 없다고 먼저 말하고, 비슷한 동이 있으면 그 동을 찾는지 되묻는다.
 5. 거리는 m, 면적은 ㎢, 비율은 %로 단위를 붙인다. 거리는 '동 대표점에서 역까지 직선거리'임을 필요하면 밝힌다.
 6. SQL 오류가 나면 오류 메시지를 보고 고쳐서 다시 시도한다.
 7. 한국어로 짧게 답한다."""
@@ -90,14 +93,14 @@ class AgentResult:
     stopped: str = ""  # 정상 종료면 빈 문자열, 상한 도달 등이면 이유
 
 
-def make_client(provider: str):
-    """제공사별 클라이언트. 키는 환경 변수(.env)에서만 읽는다."""
+def make_client(provider: str, api_key: str | None = None):
+    """제공사별 클라이언트. 키는 인자(Streamlit 사이드바 입력) 또는 환경 변수(.env)에서만 받고 저장하지 않는다."""
     from openai import OpenAI
 
     cfg = PROVIDERS[provider]
-    key = os.environ.get(cfg["key_env"])
+    key = api_key or os.environ.get(cfg["key_env"])
     if not key:
-        raise ValueError(f"{cfg['key_env']}가 없습니다. .env에 넣으세요.")
+        raise ValueError(f"{cfg['key_env']}가 없습니다. .env에 넣거나 화면에서 입력하세요.")
     client = OpenAI(api_key=key, base_url=cfg["base_url"])
     return ThrottledClient(client, cfg["min_interval"]) if cfg["min_interval"] else client
 
