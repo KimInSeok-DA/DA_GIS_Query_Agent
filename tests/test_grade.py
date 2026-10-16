@@ -159,3 +159,23 @@ def test_holdout_ai_five_minutes(answer, ok):
 ])
 def test_holdout_ai_relaxed_rules(qid, answer, ok):
     assert check_all(answer, ANSWERS[qid]) == ok
+
+@pytest.mark.parametrize("qid, answer, ok", [
+    ("B05", "영등포구에는 가장 가까운 역까지 1km가 넘는 동이 없습니다.", True),
+    ("B05", "영등포구에서 1km 넘는 동은 0곳이에요.", True),
+    ("B05", "영등포구에서는 양화동이 1km를 넘습니다.", False),
+    ("B09", "강북구에는 역이 하나도 없는 동은 없습니다. 하나 있는 동은 번동입니다.", True),
+    ("B09", "역이 없는 동은 미아동, 하나 있는 동은 번동입니다.", False),  # 틀린 전제에 동조
+    ("B11", "가까운 역은 여의나루역(338m)과 여의도역(882m)으로 약 545m 차이 납니다.", True),
+    ("B11", "여의나루역과 여의도역 사이 직선거리는 약 960m입니다.", True),
+    ("B11", "여의나루역과 여의도역은 약 700m 떨어져 있습니다.", False),
+    ("B22", "700m 이내 비율은 동작구가 100%로 가장 높고, 강북구·도봉구가 25%로 가장 낮습니다.", True),
+    ("B22", "동작구 100%, 가장 낮은 곳은 금천구 0%입니다.", True),  # 700m 정각을 빼고 센 경우
+    ("B22", "동작구가 가장 높고 강북구가 가장 낮습니다.", False),  # 동점인 도봉구를 빠뜨림
+    ("B29", "역이 있는 동 중에서는 목동이 1,039m로 가장 멉니다.", True),
+    ("B29", "신정동이 485m로 가장 멀고, 가까운 역은 신목동입니다.", False),  # '신목동' 안의 '목동'은 세지 않는다
+    ("B41", "마곡동에서 가장 가까운 역은 마곡나루역으로 공항철도와 9호선이 지납니다. 5호선 역은 아닙니다.", True),
+    ("B41", "마곡나루역(9호선)입니다.", False),
+])
+def test_holdout_ai2_rules(qid, answer, ok):
+    assert check_all(answer, ANSWERS[qid]) == ok

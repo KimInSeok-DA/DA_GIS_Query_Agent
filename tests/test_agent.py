@@ -181,4 +181,4 @@ def test_report_leaves_open_questions_out_of_accuracy(tmp_path, monkeypatch):
     monkeypatch.setattr(ev, "ROOT", tmp_path)
     (tmp_path / "outputs").mkdir()
     text = ev.write_report(records, "m", "test").read_text(encoding="utf-8")
-    assert "1/1 (100%)" in text and "기준 애매 1문항은 정답률에서 뺌" in text and "| 기준 애매 | 채점 안 함 |" in text
+    assert "1/1 (100%)" in text and "기준 애매·겹침 1문항은 정답률에서 뺌" in text and "| 기준 애매 | 채점 안 함 |" in text

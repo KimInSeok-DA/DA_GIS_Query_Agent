@@ -8,9 +8,10 @@
 - PR #4(`feat/self-check`) merge: 자기검증 단계(1015_12)
 - PR #5(`eval/holdout`) merge: 외부 AI 질문 30개(1016_01), 홀드아웃 결과·분석(1016_02), README 첫 표
 - PR #6(`docs/screenshots`) merge: README 화면 캡처
-- `feat/multi-value-grounding` 브랜치(**커밋 안 함**): 도구 설명에 `;` 여러 값 열 안내, 근거 검사 km→m 비교 고침(기록 결과 변화 0), 근거 검사의 SQL 숫자는 그대로 둠(1016_03). 테스트 100개 통과
+- PR #7(`feat/multi-value-grounding`) merge: 도구 설명에 `;` 여러 값 열 안내, 근거 검사 km→m 비교 고침, 근거 검사의 SQL 숫자는 그대로 둠(1016_03)
+- `eval/holdout-ai2` 브랜치(**커밋 안 함**): 외부 AI 질문 2차 50개 `holdout_ai2`(B01～B50)와 정답(1016_04). 자동 채점 21, 기준 애매 26, 겹침 3. 테스트 116개 통과. **아직 실행 안 함**
   - 모델: gemini-3.5-flash-lite 무료 등급(1015_07)
-  - 평가 세트 150문항: 개선용 48, 홀드아웃 72(holdout 48 + holdout_extra 24) (1015_05, 1015_08～10), 외부 AI 질문 30(holdout_ai, 자동 채점 20 + 기준 애매 10) (1016_01)
+  - 평가 세트 200문항(아래 150 + 외부 AI 질문 2차 50, 1016_04): 개선용 48, 홀드아웃 72(holdout 48 + holdout_extra 24) (1015_05, 1015_08～10), 외부 AI 질문 30(holdout_ai, 자동 채점 20 + 기준 애매 10) (1016_01)
   - 프롬프트 힌트 제거, 공간 거리 SQL 매크로 `dist_m`(1015_09)
   - 할루시네이션 대응: 근거 검사(보고서 "근거 없는 수치가 나온 답"), 프롬프트 "계산도 SQL로", 지어내기 유혹 문항(1015_10)
   - 거절 판정 문장 단위로 확정 — **홀드아웃 전 확정, 이후 바꾸지 않음**
@@ -26,8 +27,9 @@
 
 ## 다음 작업
 
-1. `feat/multi-value-grounding` 커밋·PR(사용자 요청 때)
-2. (선택) 여러 값 열 안내의 효과 측정: 새 외부 질문을 받아야 함(holdout_ai는 A16을 보고 고쳤으므로 다시 쓰지 않음). `eval/holdout_ai_지시문.md` 방식으로 ChatGPT 새 대화에서 받기 → 정답 규칙 실행 전 커밋 → 실행
+1. `eval/holdout-ai2` 정답 규칙을 **실행 전에 커밋·푸시**(사용자 요청 때)
+2. holdout_ai2 실행(약 140회 호출 예상, 무료 등급, 비용 먼저 알림): `python src/eval.py --model gemini-3.5-flash-lite --label holdout_ai2 --splits holdout_ai2`
+3. 오답·기준 애매 답·정답 일부 사람 검토 → 1016_04 결과, README 표
 
 ## 향후 보완
 

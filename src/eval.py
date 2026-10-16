@@ -113,7 +113,7 @@ def run_eval(client, model: str, questions: list[dict], log_path: Path | None = 
 def regrade(label: str) -> list[dict]:
     """저장된 실행 기록의 답을 현재 채점 규칙으로 다시 채점한다(API 호출 없음).
     근거 검사 기록이 없는 옛 실행은 저장된 도구 결과(앞 5행)로 계산하므로 근거 없음이 실제보다 많게 나올 수 있다."""
-    by_id = {q["id"]: q for q in load_set(splits=("dev", "holdout", "holdout_extra", "holdout_ai"))}
+    by_id = {q["id"]: q for q in load_set(splits=("dev", "holdout", "holdout_extra", "holdout_ai", "holdout_ai2"))}
     path = ROOT / "outputs" / "raw" / f"{label}_runs.jsonl"
     records = [json.loads(line) for line in open(path, encoding="utf-8")]
     for r in records:
@@ -154,7 +154,7 @@ def write_report(records: list[dict], model: str, label: str, provider: str = ""
         "",
         f"- {note or '실행'}: {datetime.now():%Y-%m-%d %H:%M}, 모델 `{model}`" + (f" ({provider})" if provider else ""),
         (f"- 정답률 **{n_ok}/{n_graded} ({n_ok / n_graded:.0%})**" if n_graded else "- 정답률: 채점 문항 없음")
-        + (f" (기준 애매 {n - n_graded}문항은 정답률에서 뺌)" if n_graded < n else "") + f", 도구 선택 {n_tool}/{n}",
+        + (f" (기준 애매·겹침 {n - n_graded}문항은 정답률에서 뺌)" if n_graded < n else "") + f", 도구 선택 {n_tool}/{n}",
         f"- 근거 없는 수치가 나온 답 **{n_ungrounded}/{n}** (답의 숫자가 도구 결과·질문에 없음, 할루시네이션 후보)",
         *([f"- 자기검증 켬: 개입 **{n_intervened}회**. 검증 전 첫 답 기준 근거 없는 수치 {n_first_ungrounded}/{n}, "
            f"정답 {n_first_ok}/{n_graded} (위 수치는 검증 후 최종 답 기준)"] if checked else ["- 자기검증 끔"]),
@@ -225,7 +225,7 @@ def main() -> None:
     ap.add_argument("--label", required=True, help="결과 파일 이름에 붙일 이름, 예: run1")
     ap.add_argument("--ids", nargs="*", help="일부 문항만, 예: Q01 Q22")
     ap.add_argument("--splits", nargs="*", default=["dev"],
-                    help="dev(개선용) / holdout / holdout_extra / holdout_ai(외부 AI 질문). 홀드아웃은 개선이 끝난 뒤에만 돌린다")
+                    help="dev(개선용) / holdout / holdout_extra / holdout_ai·holdout_ai2(외부 AI 질문). 홀드아웃은 개선이 끝난 뒤에만 돌린다")
     ap.add_argument("--no-check", action="store_true",
                     help="자기검증을 끄고 실행한다(켰을 때와 비교용)")
     ap.add_argument("--regrade", metavar="LABEL",

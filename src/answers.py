@@ -222,6 +222,7 @@ def compute() -> dict[str, list[dict]]:
 
     a.update(compute_holdout())
     a.update(compute_holdout_ai())
+    a.update(compute_holdout_ai2())
     return a
 
 
@@ -406,6 +407,83 @@ def compute_holdout_ai() -> dict[str, list[dict]]:
     # 틀린 전제: 강남구에도 역이 없는 동이 있다
     a["A27"] = [number((gangnam["n_station"] == 0).sum())]
     a["A29"] = [REFUSE]
+    return dict(sorted(a.items()))
+
+
+def compute_holdout_ai2() -> dict[str, list[dict]]:
+    """외부 질문 2차(holdout_ai2): 같은 ChatGPT 대화에서 "방금 30개와 겹치지 않게 50개"로 받은 질문(1016_04).
+
+    기준 애매 문항과, 기존 문항과 같은 조건을 묻는 '겹침' 문항은 check를 비워 정답률에서 뺀다.
+    """
+    a: dict[str, list[dict]] = {}
+    # 기준 애매: 기준이 질문에 없거나, 역이 어느 동·구에 있는지처럼 데이터에 없는 정보가 필요하다
+    for i in [3, 6, 8, 12, 13, 14, 19, 20, 21, 23, 24, 27, 28, 30, 32, 34, 35, 36, 37, 40, 44, 45, 46, 48, 49, 50]:
+        a[f"B{i:02d}"] = []
+    # 겹침: 같은 조건을 이미 묻는 문항이 있다(B15 = Q36, B38 = Q09, B42 = H21)
+    for q in ["B15", "B38", "B42"]:
+        a[q] = []
+
+    assert (EMD["emd_nm"] == "서초동").sum() == 1
+    a["B01"] = [text(dong("서초구", "서초동")["near_station"])]
+    eunpyeong = EMD[(EMD["sgg_nm"] == "은평구") & (EMD["n_station"] >= 2)]
+    a["B02"] = [text(n) for n in eunpyeong["emd_nm"]]
+    a["B04"] = [number(abs(dong("구로구", "구로동")["cover_500m"] - dong("금천구", "가산동")["cover_500m"]), 0.1, "%")]
+    # 영등포구에는 1km 넘는 동이 없다. 없다고 말해야 한다
+    assert not ((EMD["sgg_nm"] == "영등포구") & (EMD["near_dist_m"] > 1000)).any()
+    a["B05"] = [present(r"없(습니다|어요|어|음|네요|다)|0(개|곳)")]
+    # 잠실동에서 가장 가까운 역은 잠실역이 아니라 잠실새내역이다
+    jamsil = dong("송파구", "잠실동")["near_station"]
+    assert jamsil == "잠실새내" and station(jamsil)["operators"] == "서울교통공사"
+    a["B07"] = [text(jamsil), text("서울교통공사")]
+    # 틀린 전제: 강북구에는 동 안에 역이 하나도 없는 동이 없다(번동만 1개)
+    gangbuk = EMD[EMD["sgg_nm"] == "강북구"]
+    assert (gangbuk["n_station"] == 0).sum() == 0 and list(gangbuk.loc[gangbuk["n_station"] == 1, "emd_nm"]) == ["번동"]
+    a["B09"] = [text("번동"), present(r"없는(법정)?동은(없|존재하지|확인되지)|0(개|곳)|모든(법정)?동에(역이)?(하나|1개)이상")]
+    nowon = EMD["sgg_nm"] == "노원구"
+    a["B10"] = [number((near_station_has(line_has("4호선")) & nowon).sum())]
+    # '가까운 역 두 개 사이의 차이'는 두 역까지 거리의 차이로도, 두 역 사이 거리로도 읽힌다. 둘 다 인정
+    r = dong("영등포구", "여의도동")
+    d = pd.Series(haversine_m(STATIONS["lon"], STATIONS["lat"], r["rep_lon"], r["rep_lat"]), index=STATIONS.index)
+    first, second = unique_top(d, 2, ascending=True)
+    assert [STATIONS.loc[i, "name"] for i in (first, second)] == ["여의나루", "여의도"]
+    a["B11"] = [text("여의나루"), present("여의도(?!동)"),
+                one_of([number(d[second] - d[first], 10, "m")],
+                       [number(from_station("여의나루", STATIONS)[station("여의도").name], 10, "m")])]
+    jamsil_st = from_station("잠실", STATIONS).drop(station("잠실").name)
+    near = STATIONS.loc[jamsil_st[within(jamsil_st, 2000)].index, "name"]
+    # 이름이 다른 이름에 들어 있으면(석촌 ⊂ 석촌고분·석촌동, 송파 ⊂ 송파나루·송파구) 앞뒤 글자로 가린다
+    inner = {"송파": "송파(?!나루|구|동)", "석촌": "석촌(?!고분|동)", "오금": "오금(?!동)", "거여": "거여(?!동)",
+             "마천": "마천(?!동)", "문정": "문정(?!동)", "장지": "장지(?!동)"}
+    a["B16"] = [present(inner[n]) if n in inner else text(n) for n in near]
+    # 역 표에는 서울 밖 역도 있다(A16과 같은 기준)
+    a["B17"] = [one_of([number((SEOUL_STATIONS["n_lines"] >= 2).sum())], [number((STATIONS["n_lines"] >= 2).sum())])]
+    low = EMD[(EMD["sgg_nm"] == "송파구") & (EMD["cover_500m"] < 30)]
+    a["B18"] = [text(n) for n in low["emd_nm"]]
+    # '700m 이내'를 ≤로 보면 꼴찌가 강북구·도봉구(동점), <로 보면 금천구(가산동이 정확히 700m). 1등 동작구는 같다
+    le = EMD.assign(w=EMD["near_dist_m"] <= 700).groupby("sgg_nm")["w"].mean()
+    lt = EMD.assign(w=EMD["near_dist_m"] < 700).groupby("sgg_nm")["w"].mean()
+    assert list(le[le == le.max()].index) == list(lt[lt == lt.max()].index) == ["동작구"]
+    a["B22"] = [text("동작구"), one_of([text(g) for g in le[le == le.min()].index],
+                                      [text(g) for g in lt[lt == lt.min()].index])]
+    a["B25"] = [REFUSE, NO_MINUTES]  # 지하철 소요 시간은 데이터에 없다
+    a["B26"] = [number(from_station("동대문역사문화공원", STATIONS)[station("을지로4가").name], 10, "m")]
+    yangcheon = EMD[(EMD["sgg_nm"] == "양천구") & (EMD["n_station"] >= 1)]
+    assert yangcheon.loc[unique_top(yangcheon["near_dist_m"], 1)[0], "emd_nm"] == "목동"
+    a["B29"] = [present("(?<!신)목동")]  # '목동'은 '신목동'역 안에 있다
+    a["B31"] = [number(((EMD["cover_500m"] >= 50) & (EMD["n_station"] == 0)).sum())]
+    songpa = EMD[EMD["sgg_nm"] == "송파구"]
+    a["B33"] = [present(inner[n]) if n in inner else text(n) for n in songpa["near_station"].unique()] + [text("9호선")]
+    # 가장 가까운 역의 노선 목록에 2호선이 들어 있는지(왕십리처럼 여러 노선인 역 포함)
+    # (near_station_has는 서울 전체를 보다가 신촌 2개에서 멈추므로 성동구 안에서만 본다)
+    seongdong = EMD[EMD["sgg_nm"] == "성동구"]
+    on2 = seongdong["near_station"].map(lambda n: line_has("2호선")(station(n)))
+    a["B39"] = [text(n) for n in seongdong.loc[on2 & (seongdong["n_station"] >= 1), "emd_nm"]]
+    magok = dong("강서구", "마곡동")["near_station"]
+    assert magok == "마곡나루" and "인천국제공항선" in station(magok)["lines"] and "5호선" not in station(magok)["lines"]
+    a["B41"] = [text(magok), present("공항철도|인천국제공항선")]
+    zero = EMD[EMD["n_station"] == 0].groupby("sgg_nm").size()
+    a["B43"] = [number(zero[g]) for g in unique_top(zero, 2)]
+    a["B47"] = [text(n) for n in EMD.loc[EMD["sgg_nm"] == "강동구", "emd_nm"]]
     return dict(sorted(a.items()))
 
 
