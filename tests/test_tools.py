@@ -106,3 +106,12 @@ def test_find_dong_similar_is_marked_different():
     assert [c["emd_nm"] for c in r["similar"]] == ["청담동"]
     assert "같은 동이 아니다" in r["note"]
     assert "similar" not in find_dong("없는동")
+
+
+def test_multi_value_split_example_runs():
+    # 도구 설명에 둔 여러 값 열 나눠 세기 예시가 실제로 돈다(1016_03). 운영기관을 나누면 조합이 아니라 기관별로 센다
+    res = run_sql("SELECT x, COUNT(*) AS n FROM stations, unnest(string_split(operators, ';')) AS t(x) "
+                  "WHERE in_seoul = 1 GROUP BY x")
+    counts = dict(res["rows"])
+    assert not any(";" in k for k in counts)
+    assert counts["서울교통공사"] == 225 and counts["한국철도공사"] == 59

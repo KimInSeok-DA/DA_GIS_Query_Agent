@@ -114,6 +114,8 @@ def test_ungrounded_numbers():
     assert ungrounded_numbers("평균은 640m, 약 8분 거리입니다.", [result]) == ["640", "8"]
     # 질문에 나온 숫자는 근거로 인정
     assert ungrounded_numbers("1km 넘는 동은 없습니다.", [result, "1km가 넘는 동은?"]) == []
+    # 질문은 km, 답은 m로 써도 같은 값
+    assert ungrounded_numbers("1,500m가 넘는 동은 없습니다.", [result, "1.5km 넘는 동은?"]) == []
 
 
 def test_open_question_is_not_graded():

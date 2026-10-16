@@ -86,7 +86,7 @@ def ungrounded_numbers(answer: str, sources) -> list[str]:
         v = float(raw.replace(",", ""))
         decimals = len(raw.split(".")[1]) if "." in raw else 0
         tol = 0.5 * 10 ** -decimals + 1e-9
-        if not any(abs(v - x) <= tol or abs(v - x / 1000) <= tol or abs(v * 1000 - x) <= tol * 1000 for x in src):
+        if not any(abs(v - x) <= tol or abs(v - x / 1000) <= tol or abs(v - x * 1000) <= tol for x in src):
             found.append(raw)
     return found
 
