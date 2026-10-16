@@ -40,6 +40,12 @@ def check_one(answer: str, check: dict) -> bool:
         return bool(_REFUSE_RE.search(answer))
     if kind == "clarify":
         return bool(_CLARIFY_RE.search(answer))
+    if kind == "present":
+        # 이 표현이 있어야 한다. 띄어쓰기를 지운 답에 대해 찾는다(예: 동점을 알렸는가)
+        return bool(re.search(check["pattern"], _nospace(answer)))
+    if kind == "one_of":
+        # 여러 답 방식 중 하나만 맞으면 된다. options는 check 목록의 목록(목록 안은 모두 통과해야 함)
+        return any(all(check_one(answer, c) for c in opt) for opt in check["options"])
     if kind == "absent":
         # 지어낸 표현이 없어야 한다(예: 도보 시간 질문에 "15분")
         return not re.search(check["pattern"], answer)
@@ -86,7 +92,8 @@ def ungrounded_numbers(answer: str, sources) -> list[str]:
 
 
 def grade(answer: str, checks: list[dict], tools_called: list[str], expected_tool: str) -> dict:
-    """checks를 모두 통과하면 정답. 도구 선택은 따로 센다(expected_tool이 none이면 항상 맞음)."""
+    """checks를 모두 통과하면 정답. 도구 선택은 따로 센다(expected_tool이 none이면 항상 맞음).
+    checks가 비어 있으면(정답을 하나로 정할 수 없는 문항) correct는 None — 정답률에서 뺀다."""
     failed = [c for c in checks if not check_one(answer, c)]
     tool_ok = expected_tool == "none" or expected_tool in tools_called
-    return {"correct": not failed, "tool_ok": tool_ok, "failed_checks": failed}
+    return {"correct": not failed if checks else None, "tool_ok": tool_ok, "failed_checks": failed}

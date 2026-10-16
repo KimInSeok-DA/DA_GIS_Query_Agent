@@ -9,6 +9,8 @@ check 종류
 - refuse: 답이 "데이터에 없다"고 해야 한다
 - clarify: 답이 사용자에게 되물어야 한다(같은 이름의 동이 여러 구에 있을 때)
 - absent: 답에 이 정규식이 나오면 안 된다(지어낸 시간·금액 등)
+- present: 띄어쓰기를 지운 답에 이 정규식이 나와야 한다
+- one_of: 여러 답 방식(check 목록) 중 하나를 모두 통과하면 된다
 
 글자 비교는 띄어쓰기를 무시한다(grade.py).
 
@@ -44,6 +46,25 @@ def absent(pattern: str) -> dict:
 
 
 NO_MINUTES = absent(r"\d+\s*분")
+
+
+def present(pattern: str) -> dict:
+    return {"kind": "present", "pattern": pattern}
+
+
+def one_of(*options: list[dict]) -> dict:
+    return {"kind": "one_of", "options": [list(o) for o in options]}
+
+
+def example_dong(mask: pd.Series) -> dict:
+    """mask에 드는 동 중 하나라도 이름을 들면 통과하는 present.
+    같은 이름이 mask 밖에도 있거나, 이름이 mask 밖 동·역 이름에 들어 있으면 헷갈리므로 뺀다.
+    두 글자 이름(다동·궁동)은 띄어쓰기를 지운 문장("있습니다 동작구" → "다동")에 우연히 생길 수 있어 뺀다."""
+    others = list(EMD.loc[~mask, "emd_nm"]) + list(STATIONS["name"])
+    names = sorted({n for n in EMD.loc[mask, "emd_nm"]
+                    if len(n) >= 3 and not any(n in o for o in others)})
+    assert names
+    return present("|".join(names))
 CLARIFY = {"kind": "clarify"}
 
 
@@ -200,6 +221,7 @@ def compute() -> dict[str, list[dict]]:
     a["Q48"] = [REFUSE, absent(r"\d+\s*번\s*출구")]
 
     a.update(compute_holdout())
+    a.update(compute_holdout_ai())
     return a
 
 
@@ -323,6 +345,67 @@ def compute_holdout() -> dict[str, list[dict]]:
     assert not any("9호선" in x for x in gangnam_lines)
     a["H71"] = [text(x) for x in gangnam_lines]
     a["H72"] = [number(dong("종로구", "평창동")["near_dist_m"], 1, "m")]
+    return dict(sorted(a.items()))
+
+
+def compute_holdout_ai() -> dict[str, list[dict]]:
+    """외부 질문(holdout_ai): 다른 AI(무료 ChatGPT)가 데이터 구조를 모르고 쓴 질문 30개(1016_01).
+
+    질문은 받은 그대로 쓴다. 정답이 하나로 정해지지 않는 '기준 애매' 문항은 check를 비워 정답률에서 빼고,
+    근거 없는 수치와 답(기준을 밝히거나 되묻는지)만 본다.
+    """
+    a: dict[str, list[dict]] = {}
+    for q in ["A04", "A05", "A06", "A07", "A11", "A14", "A17", "A25", "A28", "A30"]:
+        a[q] = []  # 기준 애매: 추천·편한·좋은·높은 등 기준이 질문에 없음
+
+    assert (EMD["emd_nm"] == "역삼동").sum() == 1
+    assert dong("강남구", "역삼동")["near_station"] == "역삼"
+    a["A01"] = [present("역삼(?!동)")]  # '역삼'은 '역삼동' 안에 있어 '역삼동'이 아닌 '역삼'을 찾는다
+    # 성수동이라는 법정동은 없다(성수동1가·2가). 하나로 바꿔치기하지 않고 둘 다 말해야 한다(1015_11)
+    assert not (EMD["emd_nm"] == "성수동").any()
+    a["A02"] = [text("성수동1가"), text("성수동2가")]
+    a["A03"] = [text(EMD.loc[unique_top(EMD["near_dist_m"], 1)[0], "emd_nm"])]
+    a["A08"] = [REFUSE, NO_MINUTES]  # 거리는 잴 수 있지만 걸리는 시간은 없다(Q45와 같은 기준)
+    # '지하철 없는 동' = 동 경계 안에 역이 없는 동. 예/아니오 질문이라 개수를 말하거나 그런 동을 하나라도 들면 맞다
+    no_st = EMD["n_station"] == 0
+    a["A09"] = [one_of([number(no_st.sum())], [example_dong(no_st)])]
+    a["A10"] = [text(EMD.loc[unique_top(EMD["n_station"], 1)[0], "emd_nm"])]
+    # 틀린 전제: 신림동에서 가장 가까운 역은 신림역이 아니다
+    sillim = dong("관악구", "신림동")["near_station"]
+    assert sillim != "신림"
+    a["A12"] = [text(sillim)]
+    # 1등이 동점(100%)으로 여러 개다. 하나만 고르면 틀리고, 동점 개수를 말하거나 여러 곳임을 알려야 한다
+    top = EMD["cover_500m"] == EMD["cover_500m"].max()
+    assert top.sum() > 1
+    a["A13"] = [one_of([number(top.sum())], [present(r"여러(곳|개|동)|동점|공동")])]
+    r = dong("강남구", "역삼동")
+    d = pd.Series(haversine_m(STATIONS["lon"], STATIONS["lat"], r["rep_lon"], r["rep_lat"]), index=STATIONS.index)
+    first, second = unique_top(d, 2, ascending=True)
+    assert STATIONS.loc[first, "name"] == r["near_station"]
+    a["A15"] = [text(STATIONS.loc[second, "name"])]
+    # 역 표에는 서울 밖 역도 있다. 사용자는 이를 모르므로 서울 안 역만 센 답과 표 전체로 센 답을 모두 인정한다
+    def op_counts(t: pd.DataFrame) -> list[dict]:
+        return [number(t["operators"].str.split(";").apply(lambda xs: name in xs).sum())
+                for name in ("서울교통공사", "한국철도공사")]
+    a["A16"] = [one_of(op_counts(SEOUL_STATIONS), op_counts(STATIONS))]
+    seongbuk = EMD[EMD["sgg_nm"] == "성북구"]
+    a["A18"] = [text(seongbuk.loc[unique_top(seongbuk["near_dist_m"], 1)[0], "emd_nm"])]
+    a["A19"] = [number(((EMD["sgg_nm"] == "강서구") & (EMD["near_dist_m"] <= 300)).sum())]
+    a["A20"] = [REFUSE, absent(r"\d+\s*(원|만|억)")]
+    full = EMD["cover_500m"] == 100
+    a["A21"] = [one_of([number(full.sum())], [example_dong(full)])]  # 예/아니오 질문(A09와 같은 기준)
+    gangnam = EMD[EMD["sgg_nm"] == "강남구"]
+    a["A22"] = [text(gangnam.loc[unique_top(gangnam["n_station"], 1)[0], "emd_nm"])]
+    a["A23"] = [text("신용산")]  # 개선용 Q44와 같은 내용(거리는 묻지 않음)
+    # '역 여러개' = 동 안 역 2개 이상. 종로구에서는 한 곳뿐이다
+    many = EMD[(EMD["sgg_nm"] == "종로구") & (EMD["n_station"] >= 2)]
+    assert len(many) == 1
+    a["A24"] = [text(many["emd_nm"].iloc[0])]
+    # 질문에 '5분'이 있어 '분'이 나오는 것은 막지 않고, 걷는 속도를 가정해 환산했는지 본다
+    a["A26"] = [REFUSE, absent(r"분당\s*\d|시속\s*\d|\d+\s*m\s*/\s*(분|min)|\d+\s*km\s*/\s*h")]
+    # 틀린 전제: 강남구에도 역이 없는 동이 있다
+    a["A27"] = [number((gangnam["n_station"] == 0).sum())]
+    a["A29"] = [REFUSE]
     return dict(sorted(a.items()))
 
 

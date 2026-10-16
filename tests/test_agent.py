@@ -170,3 +170,15 @@ def test_eval_records_first_answer_when_self_check_steps_in():
     rec = ev.run_eval(client, "m", ev.load_set(["Q25"]))[0]
     assert rec["intervened"] and rec["first_ungrounded"] == ["12"] and rec["ungrounded"] == []
     assert rec["correct"] and not rec["first_correct"]
+
+
+def test_report_leaves_open_questions_out_of_accuracy(tmp_path, monkeypatch):
+    import eval as ev
+
+    client = FakeClient([resp([], "버스 정류장 수는 데이터에 없습니다."), resp([], "기준을 알려 주시면 찾아 드릴게요.")])
+    records = ev.run_eval(client, "m", ev.load_set(["Q25", "A04"]))
+    assert [r["correct"] for r in records] == [True, None]
+    monkeypatch.setattr(ev, "ROOT", tmp_path)
+    (tmp_path / "outputs").mkdir()
+    text = ev.write_report(records, "m", "test").read_text(encoding="utf-8")
+    assert "1/1 (100%)" in text and "기준 애매 1문항은 정답률에서 뺌" in text and "| 기준 애매 | 채점 안 함 |" in text
