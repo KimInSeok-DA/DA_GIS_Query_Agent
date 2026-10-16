@@ -1,12 +1,21 @@
 """규칙 기반 채점기가 맞는 답은 맞게, 틀린 답은 틀리게 판정하는지 확인한다."""
 
+import json
+from pathlib import Path
+
 import pytest
 
 from grade import grade, numbers_in, ungrounded_numbers
 
+ANSWERS = json.loads((Path(__file__).resolve().parent.parent / "eval" / "answers.json").read_text(encoding="utf-8"))
+
 
 def g(answer, checks, tools=("run_sql",), expected="run_sql"):
     return grade(answer, checks, list(tools), expected)
+
+
+def check_all(answer, checks):
+    return g(answer, checks)["correct"]
 
 
 TEXT_NUM = [{"kind": "text", "value": "학동"}, {"kind": "number", "value": 44.0, "tol": 1, "unit": "m"}]
@@ -105,3 +114,46 @@ def test_ungrounded_numbers():
     assert ungrounded_numbers("평균은 640m, 약 8분 거리입니다.", [result]) == ["640", "8"]
     # 질문에 나온 숫자는 근거로 인정
     assert ungrounded_numbers("1km 넘는 동은 없습니다.", [result, "1km가 넘는 동은?"]) == []
+
+
+def test_open_question_is_not_graded():
+    assert grade("강남구에서는 논현동이 좋습니다.", [], ["run_sql"], "run_sql")["correct"] is None
+
+
+@pytest.mark.parametrize("answer, ok", [
+    ("성수동은 성수동1가와 성수동2가로 나뉩니다. 성수동1가 2개, 성수동2가 1개입니다.", True),
+    ("데이터에 '성수동'은 없고 성수동1가, 성수동2가가 있습니다. 어느 쪽인가요?", True),
+    ("성수동1가에는 역이 2개 있습니다.", False),  # 하나로 바꿔치기
+])
+def test_holdout_ai_seongsu(answer, ok):
+    assert check_all(answer, ANSWERS["A02"]) == ok
+
+
+@pytest.mark.parametrize("answer, ok", [
+    ("걷는 시간 데이터는 없습니다. 역에서 5분 거리인 동은 알려 드릴 수 없습니다.", True),  # 질문의 5분을 되풀이
+    ("도보 시간 정보는 없습니다. 다만 분당 80m로 보면 400m 이내인 동은 …", False),
+])
+def test_holdout_ai_five_minutes(answer, ok):
+    assert check_all(answer, ANSWERS["A26"]) == ok
+
+
+@pytest.mark.parametrize("qid, answer, ok", [
+    ("A01", "제일 가까운 역은 역삼역(290m)이에요.", True),
+    ("A01", "역삼(2호선)입니다.", True),
+    ("A01", "역삼동에서 가장 가까운 역은 선릉역입니다.", False),  # '역삼동'만으로는 통과하지 않는다
+    ("A09", "네, 동 경계 안에 역이 없는 법정동이 281개 있습니다.", True),
+    ("A09", "네, 있어요. 예를 들어 종로구 평창동에는 역이 없습니다.", True),
+    ("A09", "아니요, 모든 동에 역이 있습니다. 동작구도 마찬가지입니다.", False),  # '있습니다 동작구'가 '다동'이 되지 않는다
+    ("A13", "역세권 비율이 100%인 동이 113개로 공동 1위입니다.", True),
+    ("A13", "100%인 동이 여러 곳 있습니다. 예: 회현동3가", True),
+    ("A13", "가장 높은 동은 회현동3가(100%)입니다.", False),  # 동점을 무시하고 하나만 고름
+    ("A16", "서울교통공사 225개, 한국철도공사 59개 …", True),
+    ("A16", "서울교통공사 240개, 한국철도공사 104개 …", True),
+    ("A16", "서울교통공사 225개, 한국철도공사 104개 …", False),  # 기준을 섞음
+    ("A21", "네, 동 전체가 500m 안에 드는 동은 113개입니다.", True),
+    ("A21", "네, 중구 회현동3가처럼 100% 들어가는 동이 있어요.", True),
+    ("A21", "네, 중구 회현동1가처럼 많이 들어가는 동이 있어요.", False),  # 회현동1가는 65.7%
+    ("A21", "아니요, 그런 동은 데이터에 없습니다.", False),
+])
+def test_holdout_ai_relaxed_rules(qid, answer, ok):
+    assert check_all(answer, ANSWERS[qid]) == ok

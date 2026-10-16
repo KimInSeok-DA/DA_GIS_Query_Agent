@@ -45,11 +45,11 @@ def test_answers_not_in_question():
 
 
 def test_splits():
-    """개선용 48개, 홀드아웃 유형마다 4+2개."""
+    """개선용 48개, 홀드아웃 유형마다 4+2개, 외부 AI 질문 30개."""
     from collections import Counter
 
-    assert Counter(q["split"] for q in QUESTIONS) == {"dev": 48, "holdout": 48, "holdout_extra": 24}
-    hold = Counter((q["type"], q["split"]) for q in QUESTIONS if q["split"] != "dev")
+    assert Counter(q["split"] for q in QUESTIONS) == {"dev": 48, "holdout": 48, "holdout_extra": 24, "holdout_ai": 30}
+    hold = Counter((q["type"], q["split"]) for q in QUESTIONS if q["split"] in ("holdout", "holdout_extra"))
     assert all(n == (4 if s == "holdout" else 2) for (_, s), n in hold.items())
     dev_q = {q["question"] for q in QUESTIONS if q["split"] == "dev"}
     assert not dev_q & {q["question"] for q in QUESTIONS if q["split"] != "dev"}
@@ -61,10 +61,18 @@ def test_types_and_tools():
     assert clarify == {"Q22", "Q23", "H31", "H32", "H35"}
     for q in QUESTIONS:
         if q["type"] == "데이터에 없음" or q["id"] == "H60":
-            assert COMPUTED[q["id"]] == [answers.REFUSE], q["id"]
+            assert COMPUTED[q["id"]][0] == answers.REFUSE, q["id"]
+            assert all(c["kind"] == "absent" for c in COMPUTED[q["id"]][1:]), q["id"]
         elif q["type"] != "지어내기 유혹":
             assert answers.REFUSE not in COMPUTED[q["id"]], q["id"]
         assert bool(q["prev_question"]) == bool(q["prev_answer"]) == (q["type"] == "이어지는 대화"), q["id"]
+
+
+def test_open_questions_are_not_graded():
+    """기준 애매 문항만 정답이 비어 있다(정답률에서 뺌)."""
+    for q in QUESTIONS:
+        assert (COMPUTED[q["id"]] == []) == (q["type"] == "기준 애매"), q["id"]
+    assert all(q["split"] == "holdout_ai" for q in QUESTIONS if q["type"] == "기준 애매")
 
 
 def test_prev_answers_match_data():

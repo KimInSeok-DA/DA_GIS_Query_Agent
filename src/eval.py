@@ -85,7 +85,8 @@ def run_eval(client, model: str, questions: list[dict], log_path: Path | None = 
         # 근거 검사는 기록용으로 줄이기 전의 전체 도구 결과로 한다
         ungrounded = ungrounded_numbers(r.answer, grounding_sources(q, r.tool_calls))
         intervened = bool(r.first_ungrounded)
-        first_correct = grade(r.first_answer, q["checks"], tools_called, q["expected_tool"])["correct"]             if intervened else g["correct"]
+        first_correct = (grade(r.first_answer, q["checks"], tools_called, q["expected_tool"])["correct"]
+                         if intervened else g["correct"])
         records.append({
             "id": q["id"], "split": q["split"], "type": q["type"], "question": q["question"], "answer": r.answer,
             "correct": g["correct"], "tool_ok": g["tool_ok"], "failed_checks": g["failed_checks"],
@@ -100,7 +101,7 @@ def run_eval(client, model: str, questions: list[dict], log_path: Path | None = 
         if log:
             log.write(json.dumps(records[-1], ensure_ascii=False) + "\n")
             log.flush()
-        mark = "O" if g["correct"] else "X"
+        mark = "-" if g["correct"] is None else "O" if g["correct"] else "X"
         print(f"{q['id']} {mark} 도구:{','.join(tools_called) or '-'} 토큰:{r.input_tokens}+{r.output_tokens}"
               + (f" 검증개입:{','.join(r.first_ungrounded)}" if intervened else "")
               + (f" 근거없는수치:{','.join(ungrounded)}" if ungrounded else ""), flush=True)
@@ -112,14 +113,14 @@ def run_eval(client, model: str, questions: list[dict], log_path: Path | None = 
 def regrade(label: str) -> list[dict]:
     """저장된 실행 기록의 답을 현재 채점 규칙으로 다시 채점한다(API 호출 없음).
     근거 검사 기록이 없는 옛 실행은 저장된 도구 결과(앞 5행)로 계산하므로 근거 없음이 실제보다 많게 나올 수 있다."""
-    by_id = {q["id"]: q for q in load_set(splits=("dev", "holdout", "holdout_extra"))}
+    by_id = {q["id"]: q for q in load_set(splits=("dev", "holdout", "holdout_extra", "holdout_ai"))}
     path = ROOT / "outputs" / "raw" / f"{label}_runs.jsonl"
     records = [json.loads(line) for line in open(path, encoding="utf-8")]
     for r in records:
         q = by_id[r["id"]]
         g = grade(r["answer"], q["checks"], [c["name"] for c in r["tool_calls"]], q["expected_tool"])
         if g["correct"] != r["correct"]:
-            print(f"{r['id']}: {'O' if r['correct'] else 'X'} → {'O' if g['correct'] else 'X'}")
+            print(f"{r['id']}: {r['correct']} → {g['correct']}")
         r.update(correct=g["correct"], tool_ok=g["tool_ok"], failed_checks=g["failed_checks"])
         if r.get("intervened"):
             r["first_correct"] = grade(r["first_answer"], q["checks"], [c["name"] for c in r["tool_calls"]],
@@ -131,7 +132,9 @@ def regrade(label: str) -> list[dict]:
 
 def write_report(records: list[dict], model: str, label: str, provider: str = "", note: str = "") -> Path:
     n = len(records)
-    n_ok = sum(r["correct"] for r in records)
+    graded = [r for r in records if r["correct"] is not None]  # 기준 애매 문항(정답 없음)은 정답률에서 뺀다
+    n_graded = len(graded)
+    n_ok = sum(r["correct"] for r in graded)
     n_tool = sum(r["tool_ok"] for r in records)
     tin = sum(r["input_tokens"] for r in records)
     tout = sum(r["output_tokens"] for r in records)
@@ -140,7 +143,7 @@ def write_report(records: list[dict], model: str, label: str, provider: str = ""
     n_ungrounded = sum(bool(r.get("ungrounded")) for r in records)
     checked = any(r.get("self_check") for r in records)
     n_first_ungrounded = sum(bool(r.get("first_ungrounded", r.get("ungrounded"))) for r in records)
-    n_first_ok = sum(r.get("first_correct", r["correct"]) for r in records)
+    n_first_ok = sum(r.get("first_correct", r["correct"]) for r in graded)
     n_intervened = sum(bool(r.get("intervened")) for r in records)
     by_type = defaultdict(list)
     for r in records:
@@ -150,10 +153,11 @@ def write_report(records: list[dict], model: str, label: str, provider: str = ""
         f"# 평가 보고서: {label}",
         "",
         f"- {note or '실행'}: {datetime.now():%Y-%m-%d %H:%M}, 모델 `{model}`" + (f" ({provider})" if provider else ""),
-        f"- 정답률 **{n_ok}/{n} ({n_ok / n:.0%})**, 도구 선택 {n_tool}/{n}",
+        (f"- 정답률 **{n_ok}/{n_graded} ({n_ok / n_graded:.0%})**" if n_graded else "- 정답률: 채점 문항 없음")
+        + (f" (기준 애매 {n - n_graded}문항은 정답률에서 뺌)" if n_graded < n else "") + f", 도구 선택 {n_tool}/{n}",
         f"- 근거 없는 수치가 나온 답 **{n_ungrounded}/{n}** (답의 숫자가 도구 결과·질문에 없음, 할루시네이션 후보)",
         *([f"- 자기검증 켬: 개입 **{n_intervened}회**. 검증 전 첫 답 기준 근거 없는 수치 {n_first_ungrounded}/{n}, "
-           f"정답 {n_first_ok}/{n} (위 수치는 검증 후 최종 답 기준)"] if checked else ["- 자기검증 끔"]),
+           f"정답 {n_first_ok}/{n_graded} (위 수치는 검증 후 최종 답 기준)"] if checked else ["- 자기검증 끔"]),
         f"- 토큰: 입력 {tin:,} · 출력 {tout:,}(생각 {tthink:,} 포함), 문항당 평균 {(tin + tout) / n:,.0f}"
         + (f", 유료 등급 환산 비용 ${cost:.4f}" if cost is not None else ", 비용: 가격 미등록")
         + (" (무료 등급 실행, 실제 비용 0)" if provider == "gemini" else ""),
@@ -164,14 +168,17 @@ def write_report(records: list[dict], model: str, label: str, provider: str = ""
         "|---|---|---|",
     ]
     for t, rs in by_type.items():
-        lines.append(f"| {t} | {sum(r['correct'] for r in rs)}/{len(rs)} | {sum(r['tool_ok'] for r in rs)}/{len(rs)} |")
+        g = [r for r in rs if r["correct"] is not None]
+        ok = f"{sum(r['correct'] for r in g)}/{len(g)}" if g else "채점 안 함"
+        lines.append(f"| {t} | {ok} | {sum(r['tool_ok'] for r in rs)}/{len(rs)} |")
     lines += ["", "## 문항별", "",
               "| ID | 유형 | 정답 | 도구 | 근거 없는 수치 | 검증 개입(첫 답의 수치) | 호출한 도구 | 답(앞 80자) |",
               "|---|---|---|---|---|---|---|---|"]
     for r in records:
         called = ", ".join(c["name"] for c in r["tool_calls"]) or "-"
         ans = r["answer"].replace("\n", " ").replace("|", "\\|")[:80]
-        lines.append(f"| {r['id']} | {r['type']} | {'O' if r['correct'] else 'X'} | "
+        mark = "-" if r["correct"] is None else "O" if r["correct"] else "X"
+        lines.append(f"| {r['id']} | {r['type']} | {mark} | "
                      f"{'O' if r['tool_ok'] else 'X'} | {', '.join(r.get('ungrounded', [])) or '-'} | "
                      f"{', '.join(r['first_ungrounded']) if r.get('intervened') else '-'} | {called} | {ans} |")
 
@@ -191,18 +198,20 @@ def write_repeat_report(labels: list[str], label: str) -> Path:
              "| 실행 | 정답 | 근거 없는 수치가 나온 답 | 자기검증 개입 | 모델 호출 |", "|---|---|---|---|---|"]
     for lb, rs in runs.items():
         rows = rs.values()
-        lines.append(f"| {lb} | {sum(r['correct'] for r in rows)}/{len(ids)} | "
+        g = [r for r in rows if r["correct"] is not None]
+        lines.append(f"| {lb} | {sum(r['correct'] for r in g)}/{len(g)} | "
                      f"{sum(bool(r.get('ungrounded')) for r in rows)} | "
                      f"{sum(bool(r.get('intervened')) for r in rows) if any(r.get('self_check') for r in rows) else '꺼짐'}"
                      f" | {sum(r['rounds'] for r in rows)} |")
-    always = sum(all(runs[lb][i]["correct"] for lb in labels) for i in ids)
-    lines += ["", f"- **{k}번 모두 정답: {always}/{len(ids)}**", "", "## 매번 맞지는 않은 문항", "",
+    graded_ids = [i for i in ids if runs[labels[0]][i]["correct"] is not None]
+    always = sum(all(runs[lb][i]["correct"] for lb in labels) for i in graded_ids)
+    lines += ["", f"- **{k}번 모두 정답: {always}/{len(graded_ids)}**", "", "## 매번 맞지는 않은 문항", "",
               "| ID | 유형 | 맞은 횟수 | 근거 없는 수치(검증 전 첫 답 포함) | 질문 |", "|---|---|---|---|---|"]
     for i in ids:
         rs = [runs[lb][i] for lb in labels]
-        n_ok = sum(r["correct"] for r in rs)
+        n_ok = sum(bool(r["correct"]) for r in rs)
         ung = sorted({x for r in rs for x in r.get("ungrounded", []) + r.get("first_ungrounded", [])})
-        if n_ok < k or ung:
+        if (rs[0]["correct"] is not None and n_ok < k) or ung:
             lines.append(f"| {i} | {rs[0]['type']} | {n_ok}/{k} | {', '.join(ung) or '-'} | {rs[0]['question']} |")
     out = ROOT / "outputs" / f"eval_report_{label}.md"
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -216,7 +225,7 @@ def main() -> None:
     ap.add_argument("--label", required=True, help="결과 파일 이름에 붙일 이름, 예: run1")
     ap.add_argument("--ids", nargs="*", help="일부 문항만, 예: Q01 Q22")
     ap.add_argument("--splits", nargs="*", default=["dev"],
-                    help="dev(개선용) / holdout / holdout_extra. 홀드아웃은 개선이 끝난 뒤에만 돌린다")
+                    help="dev(개선용) / holdout / holdout_extra / holdout_ai(외부 AI 질문). 홀드아웃은 개선이 끝난 뒤에만 돌린다")
     ap.add_argument("--no-check", action="store_true",
                     help="자기검증을 끄고 실행한다(켰을 때와 비교용)")
     ap.add_argument("--regrade", metavar="LABEL",
