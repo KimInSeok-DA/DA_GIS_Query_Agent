@@ -6,7 +6,9 @@
 - PR #2(`feat/tools`) merge: 도구·평가 세트·에이전트 루프·평가 실행기·1차 채점·문서
 - PR #3(`eval/round2`) merge: Streamlit 화면, run4 오류 분석과 개선, 반복 실행(1015_11)
 - PR #4(`feat/self-check`) merge: 자기검증 단계(1015_12)
-- `eval/holdout` 브랜치: 외부 AI 질문 30개 `holdout_ai`와 정답(1016_01), 테스트 99개 통과. 정답 규칙은 실행 전 커밋·푸시(`daebbec`). 홀드아웃 결과·분석(1016_02)·README 첫 표는 **커밋 안 함**
+- PR #5(`eval/holdout`) merge: 외부 AI 질문 30개(1016_01), 홀드아웃 결과·분석(1016_02), README 첫 표
+- PR #6(`docs/screenshots`) merge: README 화면 캡처
+- `feat/multi-value-grounding` 브랜치(**커밋 안 함**): 도구 설명에 `;` 여러 값 열 안내, 근거 검사 km→m 비교 고침(기록 결과 변화 0), 근거 검사의 SQL 숫자는 그대로 둠(1016_03). 테스트 100개 통과
   - 모델: gemini-3.5-flash-lite 무료 등급(1015_07)
   - 평가 세트 150문항: 개선용 48, 홀드아웃 72(holdout 48 + holdout_extra 24) (1015_05, 1015_08～10), 외부 AI 질문 30(holdout_ai, 자동 채점 20 + 기준 애매 10) (1016_01)
   - 프롬프트 힌트 제거, 공간 거리 SQL 매크로 `dist_m`(1015_09)
@@ -24,8 +26,8 @@
 
 ## 다음 작업
 
-1. `docs/screenshots` 커밋·PR(사용자 요청 때): 화면 캡처 3장을 README "화면"에 넣음
-2. (선택) 1016_02 "다음에 고칠 것": 도구 설명에 `;` 여러 값 열 안내, 근거 검사에서 모델이 쓴 SQL 숫자 빼기 → 고치면 새 외부 질문으로 다시 재야 함(이번 홀드아웃은 더 이상 본 적 없는 질문이 아님)
+1. `feat/multi-value-grounding` 커밋·PR(사용자 요청 때)
+2. (선택) 여러 값 열 안내의 효과 측정: 새 외부 질문을 받아야 함(holdout_ai는 A16을 보고 고쳤으므로 다시 쓰지 않음). `eval/holdout_ai_지시문.md` 방식으로 ChatGPT 새 대화에서 받기 → 정답 규칙 실행 전 커밋 → 실행
 
 ## 향후 보완
 
