@@ -5,3 +5,6 @@ openai==3.31.0
 streamlit==1.66.0
 python-dotenv==1.2.4
 pytest==9.1.1
+
+# 문서 그림(scripts/make_charts.py)에만 쓴다. 에이전트 실행에는 필요 없다
+matplotlib==3.11.2
