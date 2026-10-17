@@ -181,4 +181,28 @@ def test_report_leaves_open_questions_out_of_accuracy(tmp_path, monkeypatch):
     monkeypatch.setattr(ev, "ROOT", tmp_path)
     (tmp_path / "outputs").mkdir()
     text = ev.write_report(records, "m", "test").read_text(encoding="utf-8")
-    assert "1/1 (100%)" in text and "기준 애매 1문항은 정답률에서 뺌" in text and "| 기준 애매 | 채점 안 함 |" in text
+    assert "1/1 (100%)" in text and "기준 애매·겹침 1문항은 정답률에서 뺌" in text and "| 기준 애매 | 채점 안 함 |" in text
+
+
+def test_throttled_client_retries_server_overload(monkeypatch):
+    """503(일시적 과부하)은 기다렸다 다시 시도한다."""
+    from openai import InternalServerError
+
+    calls = []
+
+    class Flaky:
+        def __init__(self):
+            self.chat = self
+            self.completions = self
+
+        def create(self, **kwargs):
+            calls.append(1)
+            if len(calls) == 1:
+                err = InternalServerError.__new__(InternalServerError)  # 응답 객체 없이 만든다
+                Exception.__init__(err, "503 high demand")
+                raise err
+            return "ok"
+
+    monkeypatch.setattr(agent.time, "sleep", lambda s: None)
+    assert agent.ThrottledClient(Flaky(), 0).chat.completions.create(model="m") == "ok"
+    assert len(calls) == 2

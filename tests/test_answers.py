@@ -48,7 +48,7 @@ def test_splits():
     """개선용 48개, 홀드아웃 유형마다 4+2개, 외부 AI 질문 30개."""
     from collections import Counter
 
-    assert Counter(q["split"] for q in QUESTIONS) == {"dev": 48, "holdout": 48, "holdout_extra": 24, "holdout_ai": 30}
+    assert Counter(q["split"] for q in QUESTIONS) == {"dev": 48, "holdout": 48, "holdout_extra": 24, "holdout_ai": 30, "holdout_ai2": 50}
     hold = Counter((q["type"], q["split"]) for q in QUESTIONS if q["split"] in ("holdout", "holdout_extra"))
     assert all(n == (4 if s == "holdout" else 2) for (_, s), n in hold.items())
     dev_q = {q["question"] for q in QUESTIONS if q["split"] == "dev"}
@@ -69,10 +69,18 @@ def test_types_and_tools():
 
 
 def test_open_questions_are_not_graded():
-    """기준 애매 문항만 정답이 비어 있다(정답률에서 뺌)."""
+    """기준 애매·겹침 문항만 정답이 비어 있다(정답률에서 뺌)."""
     for q in QUESTIONS:
-        assert (COMPUTED[q["id"]] == []) == (q["type"] == "기준 애매"), q["id"]
-    assert all(q["split"] == "holdout_ai" for q in QUESTIONS if q["type"] == "기준 애매")
+        assert (COMPUTED[q["id"]] == []) == (q["type"] in ("기준 애매", "겹침")), q["id"]
+    assert all(q["split"] in ("holdout_ai", "holdout_ai2") for q in QUESTIONS if q["type"] in ("기준 애매", "겹침"))
+
+
+def test_holdout_ai2_not_duplicated():
+    """외부 질문 2차는 기존 문항과 글자가 같지 않고, 같은 조건을 묻는 문항은 '겹침'으로 뺐다(1016_04)."""
+    old = {q["question"] for q in QUESTIONS if q["split"] != "holdout_ai2"}
+    new = [q for q in QUESTIONS if q["split"] == "holdout_ai2"]
+    assert not old & {q["question"] for q in new}
+    assert {q["id"] for q in new if q["type"] == "겹침"} == {"B15", "B38", "B42"}
 
 
 def test_prev_answers_match_data():

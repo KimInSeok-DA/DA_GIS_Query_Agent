@@ -44,7 +44,7 @@ class ThrottledClient:
         self.completions = self
 
     def create(self, **kwargs):
-        from openai import RateLimitError
+        from openai import InternalServerError, RateLimitError
 
         for attempt in range(self._max_retries + 1):
             wait = self._min_interval - (time.monotonic() - self._last)
@@ -59,6 +59,11 @@ class ThrottledClient:
                     raise DailyQuotaExceeded(msg[:300]) from e
                 m = re.search(r"retry in ([\d.]+)s", msg)
                 time.sleep(float(m.group(1)) + 1 if m else 60)
+            except InternalServerError:
+                # 503 "high demand" 등 일시적인 서버 과부하: 점점 길게 기다렸다 다시 시도한다
+                if attempt == self._max_retries:
+                    raise
+                time.sleep(30 * (attempt + 1))
 
 SYSTEM_PROMPT = """너는 서울 법정동별 지하철 접근성 데이터에 답하는 조회 도우미다.
 

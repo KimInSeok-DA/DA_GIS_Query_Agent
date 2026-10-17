@@ -1184,5 +1184,390 @@
    "kind": "refuse"
   }
  ],
- "A30": []
+ "A30": [],
+ "B01": [
+  {
+   "kind": "text",
+   "value": "남부터미널"
+  }
+ ],
+ "B02": [
+  {
+   "kind": "text",
+   "value": "녹번동"
+  },
+  {
+   "kind": "text",
+   "value": "신사동"
+  }
+ ],
+ "B03": [],
+ "B04": [
+  {
+   "kind": "number",
+   "value": 7.8,
+   "tol": 0.1,
+   "unit": "%"
+  }
+ ],
+ "B05": [
+  {
+   "kind": "present",
+   "pattern": "없(습니다|어요|어|음|네요|다)|0(개|곳)"
+  }
+ ],
+ "B06": [],
+ "B07": [
+  {
+   "kind": "text",
+   "value": "잠실새내"
+  },
+  {
+   "kind": "text",
+   "value": "서울교통공사"
+  }
+ ],
+ "B08": [],
+ "B09": [
+  {
+   "kind": "text",
+   "value": "번동"
+  },
+  {
+   "kind": "present",
+   "pattern": "없는(법정)?동은(없|존재하지|확인되지)|0(개|곳)|모든(법정)?동에(역이)?(하나|1개)이상"
+  }
+ ],
+ "B10": [
+  {
+   "kind": "number",
+   "value": 2.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "B11": [
+  {
+   "kind": "text",
+   "value": "여의나루"
+  },
+  {
+   "kind": "present",
+   "pattern": "여의도(?!동)"
+  },
+  {
+   "kind": "one_of",
+   "options": [
+    [
+     {
+      "kind": "number",
+      "value": 544.9115,
+      "tol": 10,
+      "unit": "m"
+     }
+    ],
+    [
+     {
+      "kind": "number",
+      "value": 960.3009,
+      "tol": 10,
+      "unit": "m"
+     }
+    ]
+   ]
+  }
+ ],
+ "B12": [],
+ "B13": [],
+ "B14": [],
+ "B15": [],
+ "B16": [
+  {
+   "kind": "text",
+   "value": "몽촌토성"
+  },
+  {
+   "kind": "text",
+   "value": "삼전"
+  },
+  {
+   "kind": "present",
+   "pattern": "석촌(?!고분|동)"
+  },
+  {
+   "kind": "text",
+   "value": "석촌고분"
+  },
+  {
+   "kind": "present",
+   "pattern": "송파(?!나루|구|동)"
+  },
+  {
+   "kind": "text",
+   "value": "송파나루"
+  },
+  {
+   "kind": "text",
+   "value": "잠실나루"
+  },
+  {
+   "kind": "text",
+   "value": "잠실새내"
+  },
+  {
+   "kind": "text",
+   "value": "한성백제"
+  }
+ ],
+ "B17": [
+  {
+   "kind": "one_of",
+   "options": [
+    [
+     {
+      "kind": "number",
+      "value": 80.0,
+      "tol": 0,
+      "unit": ""
+     }
+    ],
+    [
+     {
+      "kind": "number",
+      "value": 91.0,
+      "tol": 0,
+      "unit": ""
+     }
+    ]
+   ]
+  }
+ ],
+ "B18": [
+  {
+   "kind": "text",
+   "value": "풍납동"
+  }
+ ],
+ "B19": [],
+ "B20": [],
+ "B21": [],
+ "B22": [
+  {
+   "kind": "text",
+   "value": "동작구"
+  },
+  {
+   "kind": "one_of",
+   "options": [
+    [
+     {
+      "kind": "text",
+      "value": "강북구"
+     },
+     {
+      "kind": "text",
+      "value": "도봉구"
+     }
+    ],
+    [
+     {
+      "kind": "text",
+      "value": "금천구"
+     }
+    ]
+   ]
+  }
+ ],
+ "B23": [],
+ "B24": [],
+ "B25": [
+  {
+   "kind": "refuse"
+  },
+  {
+   "kind": "absent",
+   "pattern": "\\d+\\s*분"
+  }
+ ],
+ "B26": [
+  {
+   "kind": "number",
+   "value": 863.7898,
+   "tol": 10,
+   "unit": "m"
+  }
+ ],
+ "B27": [],
+ "B28": [],
+ "B29": [
+  {
+   "kind": "present",
+   "pattern": "(?<!신)목동"
+  }
+ ],
+ "B30": [],
+ "B31": [
+  {
+   "kind": "number",
+   "value": 171.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "B32": [],
+ "B33": [
+  {
+   "kind": "text",
+   "value": "잠실새내"
+  },
+  {
+   "kind": "text",
+   "value": "잠실나루"
+  },
+  {
+   "kind": "text",
+   "value": "강동구청"
+  },
+  {
+   "kind": "present",
+   "pattern": "송파(?!나루|구|동)"
+  },
+  {
+   "kind": "present",
+   "pattern": "석촌(?!고분|동)"
+  },
+  {
+   "kind": "text",
+   "value": "석촌고분"
+  },
+  {
+   "kind": "text",
+   "value": "가락시장"
+  },
+  {
+   "kind": "present",
+   "pattern": "문정(?!동)"
+  },
+  {
+   "kind": "present",
+   "pattern": "장지(?!동)"
+  },
+  {
+   "kind": "text",
+   "value": "올림픽공원"
+  },
+  {
+   "kind": "present",
+   "pattern": "오금(?!동)"
+  },
+  {
+   "kind": "present",
+   "pattern": "거여(?!동)"
+  },
+  {
+   "kind": "present",
+   "pattern": "마천(?!동)"
+  },
+  {
+   "kind": "text",
+   "value": "9호선"
+  }
+ ],
+ "B34": [],
+ "B35": [],
+ "B36": [],
+ "B37": [],
+ "B38": [],
+ "B39": [
+  {
+   "kind": "text",
+   "value": "하왕십리동"
+  },
+  {
+   "kind": "text",
+   "value": "사근동"
+  },
+  {
+   "kind": "text",
+   "value": "행당동"
+  },
+  {
+   "kind": "text",
+   "value": "성수동2가"
+  },
+  {
+   "kind": "text",
+   "value": "용답동"
+  }
+ ],
+ "B40": [],
+ "B41": [
+  {
+   "kind": "text",
+   "value": "마곡나루"
+  },
+  {
+   "kind": "present",
+   "pattern": "공항철도|인천국제공항선"
+  }
+ ],
+ "B42": [],
+ "B43": [
+  {
+   "kind": "number",
+   "value": 77.0,
+   "tol": 0,
+   "unit": ""
+  },
+  {
+   "kind": "number",
+   "value": 63.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "B44": [],
+ "B45": [],
+ "B46": [],
+ "B47": [
+  {
+   "kind": "text",
+   "value": "명일동"
+  },
+  {
+   "kind": "text",
+   "value": "고덕동"
+  },
+  {
+   "kind": "text",
+   "value": "상일동"
+  },
+  {
+   "kind": "text",
+   "value": "길동"
+  },
+  {
+   "kind": "text",
+   "value": "둔촌동"
+  },
+  {
+   "kind": "text",
+   "value": "암사동"
+  },
+  {
+   "kind": "text",
+   "value": "성내동"
+  },
+  {
+   "kind": "text",
+   "value": "천호동"
+  },
+  {
+   "kind": "text",
+   "value": "강일동"
+  }
+ ],
+ "B48": [],
+ "B49": [],
+ "B50": []
 }
