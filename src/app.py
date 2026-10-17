@@ -127,9 +127,11 @@ if question:
             with st.spinner("도구로 데이터를 조회하는 중…"):
                 r = agent.run(question, client, model, history=history, self_check=self_check)
         except agent.DailyQuotaExceeded:
+            st.session_state.messages.pop()  # 답 없는 질문을 다음 질문의 앞 대화로 보내지 않는다
             st.error("API 호출 한도(하루 한도 또는 크레딧)에 걸렸습니다. 나중에 다시 시도하거나 다른 키를 쓰세요.")
             st.stop()
         except Exception as e:  # 키 오류·네트워크 등. 메시지에는 키가 들어가지 않는다
+            st.session_state.messages.pop()
             st.error(f"호출 실패: {type(e).__name__}: {str(e)[:300]}")
             st.stop()
         calls = [{"name": c.name, "arguments": c.arguments, "result": c.result} for c in r.tool_calls]
