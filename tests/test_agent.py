@@ -77,6 +77,13 @@ def test_round_limit_forces_answer():
     assert r.stopped.startswith("도구 호출 상한")
 
 
+def test_empty_answer_after_round_limit_gets_fixed_message():
+    """도구 호출 상한 뒤 빈 답이면 정해 둔 문장으로 답한다(1016_04 B23)."""
+    loop = [resp([fn_call("find_dong", {"name": "신사동"})]) for _ in range(agent.MAX_TOOL_ROUNDS)]
+    r = agent.run("신사동", FakeClient(loop + [resp([], "")]), model="m")
+    assert r.answer == agent.EMPTY_ANSWER
+
+
 def test_history_is_sent():
     client = FakeClient([resp([], "강남구 신사동은 압구정역입니다.")])
     history = [{"role": "user", "content": "신사동 가까운 역?"}, {"role": "assistant", "content": "어느 구인가요?"}]

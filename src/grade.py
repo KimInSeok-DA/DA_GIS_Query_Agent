@@ -54,6 +54,8 @@ def check_one(answer: str, check: dict) -> bool:
 
 # 근거 검사에서 빼는 숫자: 목록 번호("1. ", "2) ")와 순위("2위")
 _LIST_MARK_RE = re.compile(r"(?m)^[\s*>-]*\**\d+[.)]\s|\d+\s*위")
+# 숫자가 아니라 이름인 것: 열 이름(cover_500m)과 데이터 정의 "역 500m 반경"(1016_05)
+_NOT_VALUE_RE = re.compile(r"[A-Za-z_]\w*_\w*|500\s*m\s*반경|반경\s*500\s*m")
 
 
 def _numbers_in_sources(obj, out: list[float]) -> list[float]:
@@ -67,7 +69,7 @@ def _numbers_in_sources(obj, out: list[float]) -> list[float]:
     elif isinstance(obj, bool) or obj is None:
         pass
     elif isinstance(obj, (int, float)):
-        out.append(float(obj))
+        out.append(abs(float(obj)))  # 답의 숫자는 부호 없이 읽으므로(-0.303 → 0.303) 근거도 부호를 뺀다
     elif isinstance(obj, str):
         out.extend(numbers_in(obj))
     return out
@@ -80,7 +82,7 @@ def ungrounded_numbers(answer: str, sources) -> list[str]:
     m↔km 환산도 같은 값으로 본다. 모델이 도구 없이 직접 계산한 값(290−256=34 등)도 여기에 걸린다.
     """
     src = _numbers_in_sources(sources, [])
-    text = _LIST_MARK_RE.sub(" ", answer)
+    text = _NOT_VALUE_RE.sub(" ", _LIST_MARK_RE.sub(" ", answer))
     found = []
     for raw, _unit in _NUM_RE.findall(text):
         v = float(raw.replace(",", ""))

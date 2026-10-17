@@ -72,6 +72,7 @@ SYSTEM_PROMPT = """너는 서울 법정동별 지하철 접근성 데이터에 �
    차이·합계·평균·비율 같은 계산도 머릿속으로 하지 말고 run_sql로 계산한 결과를 말한다.
    도구 결과를 데이터에 없는 가정(걷는 속도·요금·단가 등)으로 다른 값으로 바꿔 말하지 않는다. '대략', '보통'이라도 마찬가지다.
 2. 도구로 확인할 수 없는 정보는 "데이터에 없습니다"라고 답한다.
+   '있다/없다', '모두 그렇다' 같은 결론도 도구 결과로 확인한 것만 말한다. 조회가 실패했거나 확인하지 못했으면 단정하지 말고 확인하지 못했다고 말한다.
    단, 좌표로 계산할 수 있는 거리(dist_m)는 데이터에 없다고 하지 말고 계산해서 알려 준다.
 3. 같은 이름의 동이 여러 구에 있으면 하나를 골라 답하지 말고, 후보 구를 모두 알려 준 뒤 어느 구인지 되묻는다.
 4. 동 이름이 확실하지 않거나 '역삼1동'처럼 행정동으로 보이면 먼저 find_dong을 쓴다.
@@ -80,6 +81,8 @@ SYSTEM_PROMPT = """너는 서울 법정동별 지하철 접근성 데이터에 �
 6. SQL 오류가 나면 오류 메시지를 보고 고쳐서 다시 시도한다.
 7. 한국어로 짧게 답한다."""
 
+
+EMPTY_ANSWER = "데이터로 답을 확인하지 못했습니다. 동·구 이름이나 기준을 더 구체적으로 해서 다시 물어 주세요."
 
 CHECK_FEEDBACK = ("[자동 검증] 답의 수치 {nums}은(는) 도구 결과에 없습니다. "
                   "도구로 확인해서 고치거나, 확인할 수 없으면 그 수치를 빼고 다시 답하세요.")
@@ -194,7 +197,8 @@ def run(question: str, client, model: str, history: list[dict] | None = None,
                 messages.append({"role": "assistant", "content": answer})
                 messages.append({"role": "user", "content": CHECK_FEEDBACK.format(nums=", ".join(nums))})
                 continue
-        result.answer = answer
+        # 도구 호출 상한 뒤 모델이 빈 답을 내면 화면이 비지 않게 정해 둔 문장으로 답한다(1016_04 B23)
+        result.answer = answer if answer.strip() else EMPTY_ANSWER
         break
 
     result.seconds = round(time.perf_counter() - start, 2)
