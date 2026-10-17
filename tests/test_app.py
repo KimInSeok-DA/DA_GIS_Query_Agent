@@ -48,3 +48,23 @@ def test_follow_up_sends_history(monkeypatch):
     sent = client.requests[-1]["messages"]
     assert [m["role"] for m in sent] == ["system", "user", "assistant", "user"]
     assert sent[2]["content"] == "어느 구의 신사동인가요?"
+
+
+def test_failed_question_not_sent_as_history(monkeypatch):
+    class FailOnceClient(FakeClient):
+        def create(self, **kwargs):
+            if not self.requests:
+                self.requests.append(kwargs)
+                raise RuntimeError("연결 실패")
+            return super().create(**kwargs)
+
+    client = FailOnceClient([resp([], "압구정역입니다.")])
+    monkeypatch.setattr(agent, "make_client", lambda provider, api_key=None: client)
+
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.chat_input[0].set_value("신사동에서 가장 가까운 역은?").run()
+    assert any("호출 실패" in e.value for e in at.error)
+    at.chat_input[0].set_value("강남구 신사동에서 가장 가까운 역은?").run()
+    assert not at.exception
+    sent = client.requests[-1]["messages"]
+    assert [m["role"] for m in sent] == ["system", "user"]

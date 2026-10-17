@@ -57,6 +57,20 @@ def test_timeout():
     assert "시간" in r["error"]
 
 
+@pytest.mark.parametrize("query", [
+    "SELECT count(*) AS n FROM emd -- 법정동 수",  # 감싸는 쿼리의 닫는 괄호가 주석에 먹히지 않아야 한다(holdout_ai2 B15)
+    "SELECT count(*) AS n FROM emd; -- 법정동 수",
+    "SELECT count(*) AS n FROM emd; /* 법정동 수 */ ;",
+    "SELECT count(*) AS n FROM emd;",
+])
+def test_trailing_comment_and_semicolon_allowed(query):
+    assert run_sql(query)["rows"] == [[467]]
+
+
+def test_semicolon_then_second_statement_still_rejected():
+    assert "error" in run_sql("SELECT 1; -- c\nDROP TABLE emd")
+
+
 def test_error_message_hides_wrapper():
     r = run_sql("SELECT nope FROM emd")
     assert "error" in r and "LIMIT" not in r["error"]

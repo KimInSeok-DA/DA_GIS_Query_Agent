@@ -53,9 +53,13 @@ _TABLES = load_tables()
 _CON = _connect(_TABLES)
 
 
+# 끝의 세미콜론과 그 뒤 주석(SELECT 1; -- 설명). 감싸는 쿼리 안에 세미콜론이 남으면 문법 오류가 난다
+_TRAILING_RE = re.compile(r"(;\s*(--[^\n]*|/\*.*?\*/)?\s*)+$", re.S)
+
+
 def run_sql(query: str) -> dict:
     """SELECT 문 하나를 실행한다. 성공하면 columns·rows·row_count·truncated, 실패하면 error."""
-    query = query.strip().rstrip(";").strip()
+    query = _TRAILING_RE.sub("", query.strip()).strip()
     if not query:
         return {"error": "빈 쿼리입니다."}
     try:
@@ -67,8 +71,8 @@ def run_sql(query: str) -> dict:
     if statements[0].type != duckdb.StatementType.SELECT:
         return {"error": f"SELECT만 허용합니다(받은 문: {statements[0].type.name})."}
 
-    # 상한보다 1행 더 가져와서 잘렸는지 판단한다
-    wrapped = f"SELECT * FROM ({query}) AS q LIMIT {MAX_ROWS + 1}"
+    # 상한보다 1행 더 가져와서 잘렸는지 판단한다. 줄을 바꿔 감싸야 끝의 '-- 주석'이 닫는 괄호까지 주석으로 만들지 않는다
+    wrapped = f"SELECT * FROM (\n{query}\n) AS q LIMIT {MAX_ROWS + 1}"
     con = _CON.cursor()
     timer = threading.Timer(TIMEOUT_SEC, con.interrupt)
     timer.start()
