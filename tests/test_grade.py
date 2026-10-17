@@ -116,6 +116,11 @@ def test_ungrounded_numbers():
     assert ungrounded_numbers("1km 넘는 동은 없습니다.", [result, "1km가 넘는 동은?"]) == []
     # 질문은 km, 답은 m로 써도 같은 값
     assert ungrounded_numbers("1,500m가 넘는 동은 없습니다.", [result, "1.5km 넘는 동은?"]) == []
+    # 음수: 답은 부호 없이 읽으므로 근거도 부호를 뺀다(1016_04 B28)
+    assert ungrounded_numbers("강동구 상관계수: -0.303", [{"rows": [["강동구", -0.303274]]}]) == []
+    # 열 이름과 데이터 정의 "500m 반경"은 값이 아니다. 지어낸 거리 500m는 그대로 잡는다
+    assert ungrounded_numbers("`cover_500m`(역 500m 반경이 덮는 비율)을 보면 됩니다.", [result]) == []
+    assert ungrounded_numbers("가장 가까운 역까지 500m입니다.", [{"rows": [["명동2가", 630.357143]]}]) == ["500"]
 
 
 def test_open_question_is_not_graded():
