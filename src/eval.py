@@ -113,7 +113,7 @@ def run_eval(client, model: str, questions: list[dict], log_path: Path | None = 
 def regrade(label: str) -> list[dict]:
     """저장된 실행 기록의 답을 현재 채점 규칙으로 다시 채점한다(API 호출 없음).
     근거 검사 기록이 없는 옛 실행은 저장된 도구 결과(앞 5행)로 계산하므로 근거 없음이 실제보다 많게 나올 수 있다."""
-    by_id = {q["id"]: q for q in load_set(splits=("dev", "holdout", "holdout_extra", "holdout_ai", "holdout_ai2"))}
+    by_id = {q["id"]: q for q in load_set(splits=("dev", "holdout", "holdout_extra", "holdout_ai", "holdout_ai2", "holdout_ai3"))}
     path = ROOT / "outputs" / "raw" / f"{label}_runs.jsonl"
     records = [json.loads(line) for line in open(path, encoding="utf-8")]
     for r in records:
@@ -225,7 +225,7 @@ def main() -> None:
     ap.add_argument("--label", required=True, help="결과 파일 이름에 붙일 이름, 예: run1")
     ap.add_argument("--ids", nargs="*", help="일부 문항만, 예: Q01 Q22")
     ap.add_argument("--splits", nargs="*", default=["dev"],
-                    help="dev(개선용) / holdout / holdout_extra / holdout_ai·holdout_ai2(외부 AI 질문). 홀드아웃은 개선이 끝난 뒤에만 돌린다")
+                    help="dev(개선용) / holdout / holdout_extra / holdout_ai·holdout_ai2·holdout_ai3(외부 AI 질문). 홀드아웃은 개선이 끝난 뒤에만 돌린다")
     ap.add_argument("--no-check", action="store_true",
                     help="자기검증을 끄고 실행한다(켰을 때와 비교용)")
     ap.add_argument("--regrade", metavar="LABEL",

@@ -223,6 +223,7 @@ def compute() -> dict[str, list[dict]]:
     a.update(compute_holdout())
     a.update(compute_holdout_ai())
     a.update(compute_holdout_ai2())
+    a.update(compute_holdout_ai3())
     return a
 
 
@@ -484,6 +485,111 @@ def compute_holdout_ai2() -> dict[str, list[dict]]:
     zero = EMD[EMD["n_station"] == 0].groupby("sgg_nm").size()
     a["B43"] = [number(zero[g]) for g in unique_top(zero, 2)]
     a["B47"] = [text(n) for n in EMD.loc[EMD["sgg_nm"] == "강동구", "emd_nm"]]
+    return dict(sorted(a.items()))
+
+
+def near_lines() -> tuple[pd.Series, pd.Series]:
+    """동마다 가장 가까운 역의 노선 목록. 역 이름이 같은 역(신촌 2개)이 있어 두 가지로 만든다.
+    - 거리로 고른 것: 같은 이름 역 중 동 대표점에서 실제로 가장 가까운 역의 노선
+    - 이름으로 결합한 것: 같은 이름 역의 노선을 모두 합침(에이전트가 이름으로 표를 결합하면 이렇게 된다)
+    두 방식의 답이 다르면 둘 다 인정한다(1015_08과 같은 원칙)."""
+    def resolved(r) -> str:
+        c = STATIONS[STATIONS["name"] == r["near_station"]]
+        return c.iloc[int(np.argmin(haversine_m(c["lon"], c["lat"], r["rep_lon"], r["rep_lat"])))]["lines"]
+    by_dist = EMD.apply(resolved, axis=1)
+    by_name = EMD["near_station"].map(lambda n: ";".join(STATIONS.loc[STATIONS["name"] == n, "lines"]))
+    return by_dist, by_name
+
+
+def compute_holdout_ai3() -> dict[str, list[dict]]:
+    """외부 질문 3차(holdout_ai3): 같은 ChatGPT 대화에서 앞 질문과 겹치지 않게 받은 50개(1016_06).
+    3차 수정(1016_05: 단정 금지·노선 표기·빈 답) 뒤의 시스템을 잰다."""
+    a: dict[str, list[dict]] = {}
+    for i in [3, 6, 7, 11, 13, 15, 16, 17, 18, 20, 21, 25, 27, 28, 29, 32, 34, 37, 41, 45, 46, 49, 50]:
+        a[f"C{i:02d}"] = []  # 기준 애매(C03은 어느 역이 동 안에 있는지가 데이터에 없음, C29는 표준편차·범위로 답이 갈림)
+    for q in ["C38", "C43"]:
+        a[q] = []  # 겹침: C38 = H51(가장 가까운 역이 환승역), C43 = H15(가장 많은 동의 가장 가까운 역)
+
+    by_dist, by_name = near_lines()
+
+    def on(lines: pd.Series, keyword: str) -> pd.Series:
+        return lines.str.split(";").apply(lambda xs: any(keyword in x for x in xs))
+
+    def same(keyword: str) -> pd.Series:
+        """신촌을 어느 쪽으로 보든 결과가 같은 노선만 쓴다."""
+        m = on(by_dist, keyword)
+        assert m.equals(on(by_name, keyword)), keyword
+        return m
+
+    r = dong("마포구", "망원동")
+    a["C01"] = [present("망원(?!동)"), number(r["near_dist_m"], 1, "m")]  # '망원'은 '망원동' 안에 있다
+    vc = EMD["near_station"].value_counts()
+    # '여러 동의 가장 가까운 역이 겹치는 경우'를 역 수로도, 그런 동 수로도 셀 수 있다
+    a["C02"] = [one_of([number((vc >= 2).sum())], [number(vc[vc >= 2].sum())])]
+    a["C04"] = [number(same("4호선").sum())]
+    a["C05"] = [text(n) for n in EMD.loc[EMD["sgg_nm"] == "구로구", "emd_nm"]]
+    # 역 수 2개·3개인 동의 역세권 비율: 평균 또는 중앙값
+    c2, c3 = (EMD.loc[EMD["n_station"] == k, "cover_500m"] for k in (2, 3))
+    a["C08"] = [one_of([number(c2.mean(), 0.1, "%"), number(c3.mean(), 0.1, "%")],
+                       [number(c2.median(), 0.1, "%"), number(c3.median(), 0.1, "%")])]
+    # 1호선이 가장 가까운 동 중 최고 비율은 100%로 동점이 많다. 하나만 고르면 틀린다(A13과 같은 기준)
+    one = EMD[same("1호선")]
+    top = one["cover_500m"] == one["cover_500m"].max()
+    assert top.sum() > 1
+    a["C09"] = [one_of([number(top.sum())], [present(r"여러(곳|개|동)|동점|공동")])]
+    # 2호선은 신촌 처리에 따라 서대문구 수가 갈린다(4 또는 8). 1·2위(중구·영등포구)는 같다
+    g1 = EMD[on(by_dist, "2호선")].groupby("sgg_nm").size()
+    g2 = EMD[on(by_name, "2호선")].groupby("sgg_nm").size()
+    top2 = unique_top(g1, 2)
+    assert top2 == unique_top(g2, 2) and all(g1[g] == g2[g] for g in top2)
+    a["C10"] = [text(top2[0])] + [number(g1[g]) for g in top2]
+    m = EMD["sgg_nm"].isin(["강남구", "서초구"]) & EMD["near_dist_m"].between(400, 800)
+    assert not EMD.loc[EMD["sgg_nm"].isin(["강남구", "서초구"]), "near_dist_m"].isin([400, 800]).any()
+    a["C12"] = [text(n) for n in EMD.loc[m, "emd_nm"]]
+    a["C14"] = [text(n) for n in EMD.loc[same("5호선") & (EMD["n_station"] >= 1), "emd_nm"]]
+    # 100m 구간: 0～99를 0구간으로 보든(내림), 1～100을 1구간으로 보든(올림) 200～300m대가 가장 많다
+    lo = (EMD["near_dist_m"] // 100).value_counts()
+    hi = np.ceil(EMD["near_dist_m"] / 100).value_counts()
+    assert lo.idxmax() == 2 and hi.idxmax() == 3
+    a["C19"] = [one_of([number(lo.max())], [number(hi.max())])]
+    a["C22"] = [text(n) for n in EMD.loc[same("6호선") & (EMD["near_dist_m"] > 1000), "emd_nm"]]
+    assert not (EMD["cover_500m"] == 10).any()
+    # 잠실동이 정확히 100m다. '100m도 안 되는'은 미만이라 빼지만, 넣어도 아래 검사(이름이 다 있는지)는 통과한다
+    a["C23"] = [number((EMD["cover_500m"] < 10).sum())]
+    a["C24"] = [text(n) for n in EMD.loc[EMD["near_dist_m"] < 100, "emd_nm"]]
+    three = EMD[same("3호선")]
+    a["C26"] = [text(d.loc[unique_top(d["near_dist_m"], 1)[0], "emd_nm"]) for _, d in three.groupby("sgg_nm")]
+    by_n = EMD[EMD["cover_500m"] >= 25].groupby("n_station").size()
+    a["C30"] = [number(by_n[k]) for k in (0, 1, 2)]
+    # 가장 가까운 역으로 한 번도 꼽히지 않은 서울 안 역. 예/아니오 질문이라 개수를 말하거나 그런 역을 하나라도 들면 맞다
+    never = SEOUL_STATIONS[~SEOUL_STATIONS["name"].isin(set(EMD["near_station"]))]
+    others = list(SEOUL_STATIONS.loc[~SEOUL_STATIONS.index.isin(never.index), "name"]) + list(EMD["emd_nm"])
+    names = sorted({n for n in never["name"] if len(n) >= 3 and not any(n in o for o in others)})
+    a["C31"] = [one_of([number(len(never))], [present("|".join(names))])]
+    gm = EMD.groupby("sgg_nm")["near_dist_m"].transform("mean")
+    assert not (EMD["near_dist_m"] == 2 * gm).any()
+    a["C33"] = [text(n) for n in EMD.loc[EMD["near_dist_m"] >= 2 * gm, "emd_nm"]]
+    cover = EMD.groupby("sgg_nm")["cover_500m"].mean()
+    best = EMD[EMD["sgg_nm"] == unique_top(cover, 1)[0]]
+    a["C35"] = [text(unique_top(cover, 1)[0]), text(best.loc[unique_top(best["cover_500m"], 1, ascending=True)[0], "emd_nm"])]
+    a["C36"] = [number((same("9호선") & (EMD["n_station"] == 0)).sum())]
+    share = EMD.assign(h=EMD["n_station"] > 0).groupby("sgg_nm")["h"].mean()
+    a["C39"] = [text(g) for g in unique_top(share, 2, ascending=True)]  # 꼴찌 두 구(위쪽은 100%가 6개 구로 동점)
+    # 역세권 비율 0%인 동이 20곳보다 많다(동점). 20곳만 고르면 틀리고, 동점을 알려야 한다
+    zero = (EMD["cover_500m"] == 0).sum()
+    assert zero > 20
+    a["C40"] = [one_of([number(zero)], [present(r"여러(곳|개|동)|동점|공동|0%인(법정)?동이\d+")])]
+    a["C42"] = [text(unique_top(EMD[same("8호선")].groupby("sgg_nm").size(), 1)[0])]
+    a["C44"] = [REFUSE]  # 실제 걷는 길은 데이터에 없다
+    far = (EMD["near_dist_m"] >= 1000) & (EMD["n_station"] >= 1)
+    a["C47"] = [one_of([number(far.sum())], [example_dong(far)])]
+    # 가장 가까운 역의 노선을 나눠서 셈. 1위 5호선은 신촌 처리와 관계없다
+    from collections import Counter
+    c1 = Counter(x for v in by_dist for x in v.split(";"))
+    c2_ = Counter(x for v in by_name for x in v.split(";"))
+    (l1, n1), (l2, n2) = c1.most_common(2)
+    assert c2_.most_common(1)[0] == (l1, n1) and n1 > n2
+    a["C48"] = [text(l1), number(n1)]
     return dict(sorted(a.items()))
 
 

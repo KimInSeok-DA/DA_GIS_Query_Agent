@@ -184,3 +184,20 @@ def test_holdout_ai_relaxed_rules(qid, answer, ok):
 ])
 def test_holdout_ai2_rules(qid, answer, ok):
     assert check_all(answer, ANSWERS[qid]) == ok
+
+
+@pytest.mark.parametrize("qid, answer, ok", [
+    ("C01", "망원동 대표점에서 가장 가까운 역은 망원역으로 777m입니다.", True),
+    ("C01", "망원동은 가장 가까운 역까지 777m입니다.", False),  # '망원동'만으로는 역 이름을 말한 것이 아니다
+    ("C09", "1호선 역이 가장 가까운 동 중 역세권 비율 100%인 곳이 26곳으로 공동 1위입니다.", True),
+    ("C09", "가장 높은 곳은 청진동(100%)입니다.", False),  # 동점을 무시하고 하나만 고름
+    ("C10", "중구 39개, 영등포구 17개, 서대문구 8개 …", True),  # 신촌 처리에 따라 갈리는 구는 보지 않는다
+    ("C10", "중구 37개, 영등포구 17개 …", False),
+    ("C31", "네, 가장 가까운 역으로 한 번도 꼽히지 않은 서울 안 역이 107개 있습니다.", True),
+    ("C31", "네, 예를 들어 강남구청역은 어느 동의 가장 가까운 역도 아닙니다.", True),
+    ("C31", "아니요, 모든 역이 한 번 이상 가장 가까운 역입니다.", False),
+    ("C40", "역세권 비율 0%인 동이 26곳이라 20곳만 고를 수 없습니다. 그중 일부는 …", True),
+    ("C40", "가장 낮은 20곳은 청운동, 신교동, … 입니다.", False),
+])
+def test_holdout_ai3_rules(qid, answer, ok):
+    assert check_all(answer, ANSWERS[qid]) == ok

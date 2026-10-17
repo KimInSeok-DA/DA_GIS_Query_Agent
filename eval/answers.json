@@ -1569,5 +1569,714 @@
  ],
  "B48": [],
  "B49": [],
- "B50": []
+ "B50": [],
+ "C01": [
+  {
+   "kind": "present",
+   "pattern": "망원(?!동)"
+  },
+  {
+   "kind": "number",
+   "value": 777.0,
+   "tol": 1,
+   "unit": "m"
+  }
+ ],
+ "C02": [
+  {
+   "kind": "one_of",
+   "options": [
+    [
+     {
+      "kind": "number",
+      "value": 80.0,
+      "tol": 0,
+      "unit": ""
+     }
+    ],
+    [
+     {
+      "kind": "number",
+      "value": 348.0,
+      "tol": 0,
+      "unit": ""
+     }
+    ]
+   ]
+  }
+ ],
+ "C03": [],
+ "C04": [
+  {
+   "kind": "number",
+   "value": 80.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "C05": [
+  {
+   "kind": "text",
+   "value": "신도림동"
+  },
+  {
+   "kind": "text",
+   "value": "구로동"
+  },
+  {
+   "kind": "text",
+   "value": "가리봉동"
+  },
+  {
+   "kind": "text",
+   "value": "고척동"
+  },
+  {
+   "kind": "text",
+   "value": "개봉동"
+  },
+  {
+   "kind": "text",
+   "value": "오류동"
+  },
+  {
+   "kind": "text",
+   "value": "궁동"
+  },
+  {
+   "kind": "text",
+   "value": "온수동"
+  },
+  {
+   "kind": "text",
+   "value": "천왕동"
+  },
+  {
+   "kind": "text",
+   "value": "항동"
+  }
+ ],
+ "C06": [],
+ "C07": [],
+ "C08": [
+  {
+   "kind": "one_of",
+   "options": [
+    [
+     {
+      "kind": "number",
+      "value": 54.1812,
+      "tol": 0.1,
+      "unit": "%"
+     },
+     {
+      "kind": "number",
+      "value": 52.1789,
+      "tol": 0.1,
+      "unit": "%"
+     }
+    ],
+    [
+     {
+      "kind": "number",
+      "value": 54.95,
+      "tol": 0.1,
+      "unit": "%"
+     },
+     {
+      "kind": "number",
+      "value": 47.8,
+      "tol": 0.1,
+      "unit": "%"
+     }
+    ]
+   ]
+  }
+ ],
+ "C09": [
+  {
+   "kind": "one_of",
+   "options": [
+    [
+     {
+      "kind": "number",
+      "value": 26.0,
+      "tol": 0,
+      "unit": ""
+     }
+    ],
+    [
+     {
+      "kind": "present",
+      "pattern": "여러(곳|개|동)|동점|공동"
+     }
+    ]
+   ]
+  }
+ ],
+ "C10": [
+  {
+   "kind": "text",
+   "value": "중구"
+  },
+  {
+   "kind": "number",
+   "value": 39.0,
+   "tol": 0,
+   "unit": ""
+  },
+  {
+   "kind": "number",
+   "value": 17.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "C11": [],
+ "C12": [
+  {
+   "kind": "text",
+   "value": "방배동"
+  },
+  {
+   "kind": "text",
+   "value": "원지동"
+  },
+  {
+   "kind": "text",
+   "value": "개포동"
+  },
+  {
+   "kind": "text",
+   "value": "청담동"
+  },
+  {
+   "kind": "text",
+   "value": "대치동"
+  },
+  {
+   "kind": "text",
+   "value": "압구정동"
+  },
+  {
+   "kind": "text",
+   "value": "일원동"
+  }
+ ],
+ "C13": [],
+ "C14": [
+  {
+   "kind": "text",
+   "value": "돈의동"
+  },
+  {
+   "kind": "text",
+   "value": "광희동2가"
+  },
+  {
+   "kind": "text",
+   "value": "을지로4가"
+  },
+  {
+   "kind": "text",
+   "value": "마장동"
+  },
+  {
+   "kind": "text",
+   "value": "행당동"
+  },
+  {
+   "kind": "text",
+   "value": "금호동1가"
+  },
+  {
+   "kind": "text",
+   "value": "능동"
+  },
+  {
+   "kind": "text",
+   "value": "광장동"
+  },
+  {
+   "kind": "text",
+   "value": "충정로2가"
+  },
+  {
+   "kind": "text",
+   "value": "충정로3가"
+  },
+  {
+   "kind": "text",
+   "value": "아현동"
+  },
+  {
+   "kind": "text",
+   "value": "공덕동"
+  },
+  {
+   "kind": "text",
+   "value": "도화동"
+  },
+  {
+   "kind": "text",
+   "value": "화곡동"
+  },
+  {
+   "kind": "text",
+   "value": "공항동"
+  },
+  {
+   "kind": "text",
+   "value": "방화동"
+  },
+  {
+   "kind": "text",
+   "value": "개화동"
+  },
+  {
+   "kind": "text",
+   "value": "영등포동1가"
+  },
+  {
+   "kind": "text",
+   "value": "영등포동7가"
+  },
+  {
+   "kind": "text",
+   "value": "여의도동"
+  },
+  {
+   "kind": "text",
+   "value": "당산동3가"
+  },
+  {
+   "kind": "text",
+   "value": "양평동2가"
+  },
+  {
+   "kind": "text",
+   "value": "방이동"
+  },
+  {
+   "kind": "text",
+   "value": "오금동"
+  },
+  {
+   "kind": "text",
+   "value": "거여동"
+  },
+  {
+   "kind": "text",
+   "value": "마천동"
+  },
+  {
+   "kind": "text",
+   "value": "명일동"
+  },
+  {
+   "kind": "text",
+   "value": "상일동"
+  },
+  {
+   "kind": "text",
+   "value": "길동"
+  },
+  {
+   "kind": "text",
+   "value": "성내동"
+  },
+  {
+   "kind": "text",
+   "value": "천호동"
+  },
+  {
+   "kind": "text",
+   "value": "강일동"
+  }
+ ],
+ "C15": [],
+ "C16": [],
+ "C17": [],
+ "C18": [],
+ "C19": [
+  {
+   "kind": "one_of",
+   "options": [
+    [
+     {
+      "kind": "number",
+      "value": 90.0,
+      "tol": 0,
+      "unit": ""
+     }
+    ],
+    [
+     {
+      "kind": "number",
+      "value": 89.0,
+      "tol": 0,
+      "unit": ""
+     }
+    ]
+   ]
+  }
+ ],
+ "C20": [],
+ "C21": [],
+ "C22": [
+  {
+   "kind": "text",
+   "value": "구기동"
+  },
+  {
+   "kind": "text",
+   "value": "공릉동"
+  }
+ ],
+ "C23": [
+  {
+   "kind": "number",
+   "value": 49.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "C24": [
+  {
+   "kind": "text",
+   "value": "적선동"
+  },
+  {
+   "kind": "text",
+   "value": "을지로4가"
+  },
+  {
+   "kind": "text",
+   "value": "을지로3가"
+  },
+  {
+   "kind": "text",
+   "value": "갈월동"
+  },
+  {
+   "kind": "text",
+   "value": "한강로1가"
+  },
+  {
+   "kind": "text",
+   "value": "하왕십리동"
+  },
+  {
+   "kind": "text",
+   "value": "미아동"
+  },
+  {
+   "kind": "text",
+   "value": "방화동"
+  },
+  {
+   "kind": "text",
+   "value": "당산동6가"
+  },
+  {
+   "kind": "text",
+   "value": "사당동"
+  },
+  {
+   "kind": "text",
+   "value": "논현동"
+  },
+  {
+   "kind": "text",
+   "value": "문정동"
+  }
+ ],
+ "C25": [],
+ "C26": [
+  {
+   "kind": "text",
+   "value": "자곡동"
+  },
+  {
+   "kind": "text",
+   "value": "봉원동"
+  },
+  {
+   "kind": "text",
+   "value": "서초동"
+  },
+  {
+   "kind": "text",
+   "value": "금호동4가"
+  },
+  {
+   "kind": "text",
+   "value": "오금동"
+  },
+  {
+   "kind": "text",
+   "value": "진관동"
+  },
+  {
+   "kind": "text",
+   "value": "신영동"
+  },
+  {
+   "kind": "text",
+   "value": "장충동2가"
+  }
+ ],
+ "C27": [],
+ "C28": [],
+ "C29": [],
+ "C30": [
+  {
+   "kind": "number",
+   "value": 211.0,
+   "tol": 0,
+   "unit": ""
+  },
+  {
+   "kind": "number",
+   "value": 104.0,
+   "tol": 0,
+   "unit": ""
+  },
+  {
+   "kind": "number",
+   "value": 30.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "C31": [
+  {
+   "kind": "one_of",
+   "options": [
+    [
+     {
+      "kind": "number",
+      "value": 107.0,
+      "tol": 0,
+      "unit": ""
+     }
+    ],
+    [
+     {
+      "kind": "present",
+      "pattern": "4.19민주묘지|가오리|강남구청|개화산|경찰병원|공항시장|관악산|광운대|구로디지털단지|구반포|국회의사당|굽은다리|대모산입구|둔촌오륜|디지털미디어시티|몽촌토성|미아사거리|버티고개|보라매병원|봉은사|불암산|서강대|서울대입구|선정릉|솔밭공원|송파나루|수락산|숭실대입구|신논현|신대방삼거리|신반포|신방화|신이문|신정네거리|압구정로데오|오목교|용마산|종합운동장|총신대입구|태릉입구|한성백제|한양대"
+     }
+    ]
+   ]
+  }
+ ],
+ "C32": [],
+ "C33": [
+  {
+   "kind": "text",
+   "value": "청운동"
+  },
+  {
+   "kind": "text",
+   "value": "삼청동"
+  },
+  {
+   "kind": "text",
+   "value": "구기동"
+  },
+  {
+   "kind": "text",
+   "value": "평창동"
+  },
+  {
+   "kind": "text",
+   "value": "부암동"
+  },
+  {
+   "kind": "text",
+   "value": "홍지동"
+  },
+  {
+   "kind": "text",
+   "value": "신영동"
+  },
+  {
+   "kind": "text",
+   "value": "예장동"
+  },
+  {
+   "kind": "text",
+   "value": "만리동2가"
+  },
+  {
+   "kind": "text",
+   "value": "주성동"
+  },
+  {
+   "kind": "text",
+   "value": "금호동4가"
+  },
+  {
+   "kind": "text",
+   "value": "송정동"
+  },
+  {
+   "kind": "text",
+   "value": "장안동"
+  },
+  {
+   "kind": "text",
+   "value": "망우동"
+  },
+  {
+   "kind": "text",
+   "value": "성북동"
+  },
+  {
+   "kind": "text",
+   "value": "정릉동"
+  },
+  {
+   "kind": "text",
+   "value": "진관동"
+  },
+  {
+   "kind": "text",
+   "value": "연희동"
+  },
+  {
+   "kind": "text",
+   "value": "상암동"
+  },
+  {
+   "kind": "text",
+   "value": "오쇠동"
+  },
+  {
+   "kind": "text",
+   "value": "우면동"
+  },
+  {
+   "kind": "text",
+   "value": "내곡동"
+  },
+  {
+   "kind": "text",
+   "value": "세곡동"
+  },
+  {
+   "kind": "text",
+   "value": "율현동"
+  },
+  {
+   "kind": "text",
+   "value": "신천동"
+  },
+  {
+   "kind": "text",
+   "value": "장지동"
+  }
+ ],
+ "C34": [],
+ "C35": [
+  {
+   "kind": "text",
+   "value": "중구"
+  },
+  {
+   "kind": "text",
+   "value": "의주로2가"
+  }
+ ],
+ "C36": [
+  {
+   "kind": "number",
+   "value": 11.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "C37": [],
+ "C38": [],
+ "C39": [
+  {
+   "kind": "text",
+   "value": "종로구"
+  },
+  {
+   "kind": "text",
+   "value": "중구"
+  }
+ ],
+ "C40": [
+  {
+   "kind": "one_of",
+   "options": [
+    [
+     {
+      "kind": "number",
+      "value": 26.0,
+      "tol": 0,
+      "unit": ""
+     }
+    ],
+    [
+     {
+      "kind": "present",
+      "pattern": "여러(곳|개|동)|동점|공동|0%인(법정)?동이\\d+"
+     }
+    ]
+   ]
+  }
+ ],
+ "C41": [],
+ "C42": [
+  {
+   "kind": "text",
+   "value": "송파구"
+  }
+ ],
+ "C43": [],
+ "C44": [
+  {
+   "kind": "refuse"
+  }
+ ],
+ "C45": [],
+ "C46": [],
+ "C47": [
+  {
+   "kind": "one_of",
+   "options": [
+    [
+     {
+      "kind": "number",
+      "value": 14.0,
+      "tol": 0,
+      "unit": ""
+     }
+    ],
+    [
+     {
+      "kind": "present",
+      "pattern": "강일동|개화동|공릉동|도봉동|망우동|방학동|상암동|수유동|시흥동|정릉동|중계동|진관동"
+     }
+    ]
+   ]
+  }
+ ],
+ "C48": [
+  {
+   "kind": "text",
+   "value": "5호선"
+  },
+  {
+   "kind": "number",
+   "value": 99.0,
+   "tol": 0,
+   "unit": ""
+  }
+ ],
+ "C49": [],
+ "C50": []
 }
